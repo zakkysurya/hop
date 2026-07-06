@@ -1,6 +1,7 @@
 <div align="center">
 
-<img src="hop-rabbit.png" alt="hop logo" width="240"/>
+<img src="hop-banner.png" alt="hop — jump from laptop to server" width="600" />
+
 
 
 # 🐇 hop
