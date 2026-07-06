@@ -95,15 +95,15 @@ Berikut adalah contoh isi file konfigurasi `config.yaml`:
 
 ```yaml
 hosts:
-  - alias: dev-scweb2
-    host: 103.52.147.230
+  - alias: dev-projek
+    host: xx.xx.xx.xx
     user: root
     port: 22
     paths:
-      - alias: dev-scweb2
-        path: /var/www/html/scweb2
-      - alias: dev-mobile
-        path: /var/www/html/mobile
+      - alias: projek1
+        path: /var/www/html/projek1
+      - alias: projek2
+        path: /var/www/html/projek2
 ```
 
 ### Penjelasan Field:
@@ -127,9 +127,9 @@ Menampilkan ringkasan seluruh host yang terdaftar beserta konfigurasinya secara 
   ```
 * **Contoh Output**:
   ```
-  HOST             HOST (alias)   USER   PORT   PATHS (alias)
-  ------------     ------------   ----   ----   -----
-  103.52.147.230   dev-scweb2     root   22     dev-scweb2, dev-mobile
+  IP/HOST      ALIAS       USER   PORT   PATHS
+  -------      -----       ----   ----   -----
+  xx.xx.xx.xx  dev-projek  root   22     projek1, projek2
   ```
 
 ### 2. Koneksi ke Host (`hop <host-alias> [path-alias]`)
@@ -137,15 +137,15 @@ Menghubungkan terminal Anda ke server SSH tujuan dan masuk ke direktori proyek t
 * **Koneksi dengan Path Utama (Default)**:
   Jika Anda tidak menyertakan `path-alias`, sistem otomatis masuk ke path pertama yang terdaftar.
   ```bash
-  hop dev-scweb2
+  hop dev-projek
   ```
 * **Koneksi ke Path Spesifik**:
   ```bash
-  hop dev-scweb2 dev-mobile
+  hop dev-projek projek2
   ```
 * **Penanganan Masalah**:
   Jika host belum memiliki direktori terdaftar, sistem akan memblokir koneksi dengan pesan:
-  `Host 'dev-scweb2' belum memiliki path. Silakan tambahkan path terlebih dahulu.`
+  `Host 'dev-projek' belum memiliki path. Silakan tambahkan path terlebih dahulu.`
 
 ### 3. `hop add`
 Menambahkan host baru secara interaktif melalui CLI.
@@ -159,14 +159,14 @@ Menambahkan host baru secara interaktif melalui CLI.
 Mengubah detail informasi dari host yang sudah ada (seperti IP, port, atau user).
 * **Perintah**:
   ```bash
-  hop edit dev-scweb2
+  hop edit dev-projek
   ```
 
 ### 5. `hop remove <host-alias>`
 Menghapus host beserta seluruh path di dalamnya dari daftar konfigurasi.
 * **Perintah**:
   ```bash
-  hop remove dev-scweb2
+  hop remove dev-projek
   ```
 
 ### 6. `hop path-list [<host-alias>]`
@@ -177,24 +177,24 @@ Menampilkan detail path untuk seluruh host, atau spesifik untuk host yang ditent
   ```
 * **Contoh Output**:
   ```
-  HOST             HOST (alias)   PATH                   PATH (alias)
-  ------------     ------------   ----                   ------------
-  103.52.147.230   dev-scweb2     /var/www/html/scweb2   dev-scweb2
-  103.52.147.230   dev-scweb2     /var/www/html/mobile   dev-mobile
+  IP/HOST      ALIAS         PATH                       PATH ALIAS
+  -------      -----         ----                       ----------
+  xx.xx.xx.xx  dev-projek    /var/www/html/projek1      projek1
+  xx.xx.xx.xx  dev-projek    /var/www/html/projek2      projek2
   ```
 
 ### 7. `hop path-add <host-alias>`
 Menambahkan alias direktori proyek baru ke host yang sudah ada.
 * **Perintah**:
   ```bash
-  hop path-add dev-scweb2
+  hop path-add dev-projek
   ```
 
 ### 8. `hop path-remove <host-alias> <path-alias>`
 Menghapus direktori proyek tertentu dari suatu host.
 * **Perintah**:
   ```bash
-  hop path-remove dev-scweb2 dev-mobile
+  hop path-remove dev-projek projek2
   ```
 
 ---
@@ -213,8 +213,8 @@ source ~/.bashrc
 ### Cara Kerja Autocomplete (TAB / Double-TAB):
 1. **Melengkapi Perintah & Host**: 
    Ketik `hop ` lalu tekan `Tab 2x` untuk melihat daftar subcommand dan host alias yang tersedia.
-   *Contoh:* Ketik `hop dev-` lalu tekan `Tab` untuk langsung melengkapinya menjadi `hop dev-scweb2 `.
+   *Contoh:* Ketik `hop dev-` lalu tekan `Tab` untuk langsung melengkapinya menjadi `hop dev-projek `.
 2. **Melengkapi Path Alias**:
-   Setelah host terisi (misalnya `hop dev-scweb2 ` dengan spasi di akhir), tekan `Tab` kembali untuk memicu pelengkapan otomatis path alias milik host tersebut.
+   Setelah host terisi (misalnya `hop dev-projek ` dengan spasi di akhir), tekan `Tab` kembali untuk memicu pelengkapan otomatis path alias milik host tersebut.
 3. **Catatan Perilaku Bawaan Bash**:
-   Jika seluruh pilihan path alias memiliki awalan kata yang sama (misalnya: `dev-scweb2` dan `dev-mobile` yang sama-sama berawalan `dev-`), menekan `Tab` akan langsung mengisi awalan terpanjang yang sama (`dev-`). Anda hanya perlu melanjutkan mengetik lanjutannya (misal huruf **`m`** untuk `dev-mobile`) lalu tekan `Tab` lagi untuk melengkapinya.
+   Jika seluruh pilihan path alias memiliki awalan kata yang sama (misalnya: `projek1` dan `projek2` yang sama-sama berawalan `projek`), menekan `Tab` akan langsung mengisi awalan terpanjang yang sama (`projek`). Anda hanya perlu melanjutkan mengetik lanjutannya (misal huruf **`2`** untuk `projek2`) lalu tekan `Tab` lagi untuk melengkapinya.
