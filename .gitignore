@@ -1,0 +1,13 @@
+# Binaries
+/hop
+/hop.exe
+
+# Backups
+*.bak
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Context directories
+/.context/
