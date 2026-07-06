@@ -1,8 +1,9 @@
 <div align="center">
 
-<img src="hop-rabbit.png" alt="hop logo" width="240" />
-# 🐇 hop
+<img src="hop-rabbit.png" alt="hop logo" width="240"/>
 
+
+# 🐇 hop
 **SSH Project Launcher & Directory Jumper**
 
 Lompat langsung ke server dan direktori project favorit Anda — tanpa `history | grep` lagi.
