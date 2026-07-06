@@ -1,7 +1,6 @@
 <div align="center">
 
-<img src="hop-rabbit.png" alt="hop logo" width="180" />
-
+<img src="hop-rabbit.png" alt="hop logo" width="240" />
 # 🐇 hop
 
 **SSH Project Launcher & Directory Jumper**
