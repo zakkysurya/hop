@@ -1,97 +1,108 @@
-# 🚀 hop — SSH Project Launcher & Directory Jumper
+<div align="center">
 
-<p align="center">
-  <img src="hop-rabbit.png" alt="hop logo" width="200" />
-</p>
+<img src="hop-rabbit.png" alt="hop logo" width="180" />
 
-`hop` adalah alat CLI (Command Line Interface) ringan yang dirancang untuk mempermudah manajemen dan peluncuran koneksi SSH serta perpindahan direktori (*directory jumping*) langsung setelah masuk ke server. Proyek ini dibangun menggunakan bahasa Go, tanpa dependensi eksternal yang berat, serta menggunakan aplikasi `ssh` bawaan sistem secara langsung (*shell out*).
+# 🐇 hop
 
-Alat ini sangat cocok sebagai pengganti cara manual mencari IP server di history terminal Anda (`history | grep <ip>`).
+**SSH Project Launcher & Directory Jumper**
+
+Lompat langsung ke server dan direktori project favorit Anda — tanpa `history | grep` lagi.
+
+[![Go Version](https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=flat-square&logo=go&logoColor=white)](https://go.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square)]()
+[![Build](https://img.shields.io/badge/build-single%20binary-success?style=flat-square)]()
+
+</div>
+
+---
+
+`hop` adalah CLI ringan berbasis Go untuk mempermudah koneksi SSH dan *directory jumping* — otomatis masuk ke direktori project yang tepat begitu Anda terhubung ke server. Tanpa dependensi eksternal yang berat, murni *shell out* ke binary `ssh` bawaan sistem Anda.
+
+> Dulu: `history | grep <ip>` → `!<no>` → `history | grep <project>` → `!<no>`
+> Sekarang: `hop <alias>` ✨
+
+## 📚 Daftar Isi
+
+- [Fitur Utama](#-fitur-utama)
+- [Instalasi](#-instalasi)
+- [Konfigurasi](#️-konfigurasi-configyaml)
+- [Penggunaan](#-penggunaan)
+- [Autocomplete](#️-autocomplete-tab-di-bash)
 
 ---
 
 ## ✨ Fitur Utama
 
-1. **Multi-Path per Host**: Satu host server dapat memiliki beberapa direktori proyek yang beralias tersendiri.
-2. **Auto Jumper**: Otomatis berpindah direktori (*cd*) ke path yang dituju saat berhasil terhubung melalui SSH.
-3. **Penyajian Data Informatif**: Layout tabel yang rapi untuk perintah `hop list` dan `hop path-list`.
-4. **Manajemen Interaktif**: Subcommand intuitif untuk menambah, mengubah, atau menghapus host dan path (`add`, `edit`, `remove`, `path-add`, `path-remove`).
-5. **Migrasi Otomatis (v1 → v2)**: Otomatis mendeteksi, mencadangkan, dan mengonversi file konfigurasi dari aplikasi pendahulu (`devjump`) ke skema data baru `hop` tanpa kehilangan data.
-6. **Autocompletion Pintar**: Dukungan *autocomplete* (menggunakan tombol `Tab`) untuk Bash yang mencakup perintah, alias host, hingga alias path.
+| Fitur | Deskripsi |
+|---|---|
+| 🗂️ **Multi-Path per Host** | Satu server bisa punya banyak direktori project, masing-masing dengan alias sendiri |
+| 🚀 **Auto Jumper** | Otomatis `cd` ke path tujuan begitu SSH berhasil terhubung |
+| 📋 **Tabel Rapi** | Output `hop list` & `hop path-list` mudah dibaca sekilas |
+| 🛠️ **Manajemen Interaktif** | `add`, `edit`, `remove`, `path-add`, `path-remove` — semua dipandu prompt |
+| 🔄 **Migrasi Otomatis** | Config lama otomatis dicadangkan & dikonversi ke skema terbaru |
+| ⌨️ **Autocomplete Pintar** | Tab-completion untuk command, alias host, dan alias path |
 
 ---
 
-## 💻 Panduan Instalasi
+## 💻 Instalasi
 
-### 🐧 1. Cara Instalasi di OS Linux / macOS
+<details open>
+<summary><b>🐧 Linux / macOS</b></summary>
 
-#### Prasyarat
-- Pastikan Go Compiler (minimal versi 1.20) sudah terinstal: `go version`
-- Pastikan biner `ssh` terinstal di sistem Anda.
+**Prasyarat:** Go 1.20+ (`go version`) dan binary `ssh` sudah terpasang.
 
-#### Langkah-langkah
-1. Clone repositori ini atau masuk ke direktori proyek `hop`.
-2. Lakukan kompilasi kode:
-   ```bash
-   go build -o hop .
-   ```
-3. Pindahkan biner hasil kompilasi ke folder biner lokal Anda (pastikan folder ini masuk ke dalam `$PATH` sistem Anda):
-   ```bash
-   cp hop ~/.local/bin/
-   # atau untuk seluruh pengguna di sistem (membutuhkan akses root):
-   sudo cp hop /usr/local/bin/
-   ```
-4. Verifikasi instalasi:
-   ```bash
-   hop help
-   ```
+```bash
+# 1. Compile
+go build -o hop .
 
----
+# 2. Pasang ke PATH
+cp hop ~/.local/bin/
+# atau untuk seluruh user di sistem:
+sudo cp hop /usr/local/bin/
 
-### 🪟 2. Cara Instalasi di OS Windows
+# 3. Verifikasi
+hop help
+```
 
-#### Prasyarat
-- Pastikan Go Compiler terinstal di Windows.
-- Pastikan fitur **OpenSSH Client** bawaan Windows sudah aktif (aktif secara bawaan di Windows 10/11).
-- Terminal yang digunakan direkomendasikan adalah **PowerShell** atau **Windows Terminal**.
+</details>
 
-#### Langkah-langkah
-1. Buka PowerShell atau Command Prompt, arahkan ke direktori proyek `hop`.
-2. Compile proyek:
-   ```powershell
-   go build -o hop.exe .
-   ```
-3. Buat folder khusus untuk menyimpan biner CLI jika belum ada (misal `C:\bin`) dan salin biner ke folder tersebut:
-   ```powershell
-   New-Item -ItemType Directory -Force -Path "C:\bin"
-   Copy-Item hop.exe -Destination "C:\bin\hop.exe"
-   ```
-4. Tambahkan folder tersebut ke Environment Variables Windows (`PATH`):
-   - Buka Start Menu, cari **"Edit the system environment variables"**.
-   - Klik **Environment Variables**.
-   - Di bagian *User variables* atau *System variables*, cari variabel **Path**, klik **Edit**, lalu tambahkan `C:\bin`.
-   - Simpan semua dialog.
-5. **Penting (Konfigurasi Direktori `HOME` di Windows)**:
-   Aplikasi `hop` mencari folder konfigurasi berdasarkan variabel lingkungan `HOME`. Secara *default*, Windows menggunakan `USERPROFILE` untuk direktori pengguna. Agar aplikasi berjalan dengan normal di Windows, tambahkan variabel lingkungan baru:
-   - Nama variabel: `HOME`
-   - Nilai variabel: `C:\Users\NamaUserAnda` (sesuaikan dengan folder user Anda).
-6. Buka terminal baru dan verifikasi:
-   ```powershell
-   hop.exe help
-   ```
+<details>
+<summary><b>🪟 Windows</b></summary>
+
+**Prasyarat:** Go compiler, OpenSSH Client aktif (default di Windows 10/11), PowerShell/Windows Terminal.
+
+```powershell
+# 1. Compile
+go build -o hop.exe .
+
+# 2. Pasang ke folder khusus
+New-Item -ItemType Directory -Force -Path "C:\bin"
+Copy-Item hop.exe -Destination "C:\bin\hop.exe"
+
+# 3. Tambahkan C:\bin ke Environment Variable PATH
+#    (Start Menu → "Edit the system environment variables")
+```
+
+> ⚠️ **Penting:** `hop` mencari config lewat variabel `HOME`, yang tidak selalu ada di Windows secara default. Tambahkan environment variable baru: `HOME` = `C:\Users\NamaUserAnda`.
+
+```powershell
+# 4. Verifikasi
+hop.exe help
+```
+
+</details>
 
 ---
 
-## 🛠️ Konfigurasi file (`config.yaml`)
+## 🛠️ Konfigurasi (`config.yaml`)
 
-File konfigurasi akan dibuat secara otomatis saat `hop` dijalankan pertama kali.
+Dibuat otomatis saat `hop` pertama kali dijalankan.
 
-* **Lokasi File (Linux/macOS)**: `~/.config/hop/config.yaml`
-* **Lokasi File (Windows)**: `%HOME%\.config\hop\config.yaml` (atau `C:\Users\NamaUser\.config\hop\config.yaml`)
-
-### Struktur Skema Konfigurasi (v2)
-
-Berikut adalah contoh isi file konfigurasi `config.yaml`:
+| OS | Lokasi |
+|---|---|
+| Linux/macOS | `~/.config/hop/config.yaml` |
+| Windows | `%HOME%\.config\hop\config.yaml` |
 
 ```yaml
 hosts:
@@ -106,115 +117,90 @@ hosts:
         path: /var/www/html/projek2
 ```
 
-### Penjelasan Field:
-- `alias`: Nama unik untuk memanggil host tersebut di CLI.
-- `host`: Alamat IP atau hostname domain server SSH.
-- `user`: Username yang digunakan untuk login SSH.
-- `port`: Port SSH (default: 22).
-- `paths`: Daftar direktori proyek di server terkait.
-  - `alias`: Nama singkat untuk direktori tersebut (dipakai saat pemanggilan).
-  - `path`: Direktori tujuan di server yang akan dituju otomatis setelah login.
+| Field | Keterangan |
+|---|---|
+| `alias` | Nama unik untuk memanggil host di CLI |
+| `host` | IP atau hostname server SSH |
+| `user` | Username login SSH |
+| `port` | Port SSH (default `22`) |
+| `paths[].alias` | Nama singkat direktori (dipakai saat connect) |
+| `paths[].path` | Path tujuan di server |
 
 ---
 
-## 📑 Panduan Penggunaan Perintah (Subcommands)
+## 📑 Penggunaan
 
-### 1. `hop list`
-Menampilkan ringkasan seluruh host yang terdaftar beserta konfigurasinya secara terstruktur.
-* **Perintah**:
-  ```bash
-  hop list
-  ```
-* **Contoh Output**:
-  ```
-  IP/HOST      ALIAS       USER   PORT   PATHS
-  -------      -----       ----   ----   -----
-  xx.xx.xx.xx  dev-projek  root   22     projek1, projek2
-  ```
+### Koneksi cepat
 
-### 2. Koneksi ke Host (`hop <host-alias> [path-alias]`)
-Menghubungkan terminal Anda ke server SSH tujuan dan masuk ke direktori proyek terkait.
-* **Koneksi dengan Path Utama (Default)**:
-  Jika Anda tidak menyertakan `path-alias`, sistem otomatis masuk ke path pertama yang terdaftar.
-  ```bash
-  hop dev-projek
-  ```
-* **Koneksi ke Path Spesifik**:
-  ```bash
-  hop dev-projek projek2
-  ```
-* **Penanganan Masalah**:
-  Jika host belum memiliki direktori terdaftar, sistem akan memblokir koneksi dengan pesan:
-  `Host 'dev-projek' belum memiliki path. Silakan tambahkan path terlebih dahulu.`
+```bash
+hop <host-alias>               # connect, otomatis masuk ke path pertama
+hop <host-alias> <path-alias>  # connect ke path spesifik
+```
 
-### 3. `hop add`
-Menambahkan host baru secara interaktif melalui CLI.
-* **Perintah**:
-  ```bash
-  hop add
-  ```
-* Anda akan dipandu untuk mengisi Alias host, Alamat Host, User, Port, dan minimal satu path beserta aliasnya.
+```bash
+hop dev-projek           # default path
+hop dev-projek projek2   # path spesifik
+```
 
-### 4. `hop edit <host-alias>`
-Mengubah detail informasi dari host yang sudah ada (seperti IP, port, atau user).
-* **Perintah**:
-  ```bash
-  hop edit dev-projek
-  ```
+Kalau alias tidak ditemukan, `hop` menampilkan daftar host/path yang valid — tidak perlu tebak-tebakan.
 
-### 5. `hop remove <host-alias>`
-Menghapus host beserta seluruh path di dalamnya dari daftar konfigurasi.
-* **Perintah**:
-  ```bash
-  hop remove dev-projek
-  ```
+### Manajemen host & path
 
-### 6. `hop path-list [<host-alias>]`
-Menampilkan detail path untuk seluruh host, atau spesifik untuk host yang ditentukan.
-* **Perintah**:
-  ```bash
-  hop path-list
-  ```
-* **Contoh Output**:
-  ```
-  IP/HOST      ALIAS         PATH                       PATH ALIAS
-  -------      -----         ----                       ----------
-  xx.xx.xx.xx  dev-projek    /var/www/html/projek1      projek1
-  xx.xx.xx.xx  dev-projek    /var/www/html/projek2      projek2
-  ```
+| Command | Fungsi |
+|---|---|
+| `hop list` | Lihat semua host terdaftar |
+| `hop add` | Tambah host baru (interaktif) |
+| `hop edit <host>` | Ubah detail host |
+| `hop remove <host>` | Hapus host |
+| `hop path-list [<host>]` | Lihat semua path (semua host / spesifik) |
+| `hop path-add <host>` | Tambah path baru ke host |
+| `hop path-remove <host> <path>` | Hapus path dari host |
 
-### 7. `hop path-add <host-alias>`
-Menambahkan alias direktori proyek baru ke host yang sudah ada.
-* **Perintah**:
-  ```bash
-  hop path-add dev-projek
-  ```
+<details>
+<summary>Contoh output <code>hop list</code></summary>
 
-### 8. `hop path-remove <host-alias> <path-alias>`
-Menghapus direktori proyek tertentu dari suatu host.
-* **Perintah**:
-  ```bash
-  hop path-remove dev-projek projek2
-  ```
+```
+IP/HOST      ALIAS       USER   PORT   PATHS
+-------      -----       ----   ----   -----
+xx.xx.xx.xx  dev-projek  root   22     projek1, projek2
+```
+
+</details>
+
+<details>
+<summary>Contoh output <code>hop path-list</code></summary>
+
+```
+IP/HOST      ALIAS         PATH                       PATH ALIAS
+-------      -----         ----                       ----------
+xx.xx.xx.xx  dev-projek    /var/www/html/projek1      projek1
+xx.xx.xx.xx  dev-projek    /var/www/html/projek2      projek2
+```
+
+</details>
 
 ---
 
-## ⌨️ Konfigurasi Autocomplete (Tombol TAB) di Bash
+## ⌨️ Autocomplete (Tab) di Bash
 
-Anda dapat mengaktifkan fitur pelengkapan otomatis (*autocompletion*) saat menekan tombol `Tab` di terminal Bash (Linux/macOS).
+Aktifkan sekali, pakai selamanya:
 
-### Cara Mengaktifkan secara Permanen
-Jalankan perintah berikut untuk menambahkan skrip pelengkap ke profil Bash Anda:
 ```bash
 hop completion bash >> ~/.bashrc
 source ~/.bashrc
 ```
 
-### Cara Kerja Autocomplete (TAB / Double-TAB):
-1. **Melengkapi Perintah & Host**: 
-   Ketik `hop ` lalu tekan `Tab 2x` untuk melihat daftar subcommand dan host alias yang tersedia.
-   *Contoh:* Ketik `hop dev-` lalu tekan `Tab` untuk langsung melengkapinya menjadi `hop dev-projek `.
-2. **Melengkapi Path Alias**:
-   Setelah host terisi (misalnya `hop dev-projek ` dengan spasi di akhir), tekan `Tab` kembali untuk memicu pelengkapan otomatis path alias milik host tersebut.
-3. **Catatan Perilaku Bawaan Bash**:
-   Jika seluruh pilihan path alias memiliki awalan kata yang sama (misalnya: `projek1` dan `projek2` yang sama-sama berawalan `projek`), menekan `Tab` akan langsung mengisi awalan terpanjang yang sama (`projek`). Anda hanya perlu melanjutkan mengetik lanjutannya (misal huruf **`2`** untuk `projek2`) lalu tekan `Tab` lagi untuk melengkapinya.
+**Cara pakai:**
+1. `hop <Tab><Tab>` → daftar semua command & host alias
+2. `hop dev-<Tab>` → otomatis lengkap jadi `hop dev-projek `
+3. `hop dev-projek <Tab>` → daftar path-alias milik host tersebut
+
+> 💡 Kalau beberapa alias berbagi awalan sama (`projek1`, `projek2`), Tab akan mengisi sebanyak yang unik (`projek`), lalu Anda lanjutkan ketik pembedanya.
+
+---
+
+<div align="center">
+
+Dibuat untuk mempercepat workflow development sehari-hari 🐇💨
+
+</div>
