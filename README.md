@@ -116,6 +116,7 @@ hosts:
         path: /var/www/html/projek1
       - alias: projek2
         path: /var/www/html/projek2
+        command: php artisan serve
 ```
 
 | Field | Keterangan |
@@ -126,6 +127,7 @@ hosts:
 | `port` | Port SSH (default `22`) |
 | `paths[].alias` | Nama singkat direktori (dipakai saat connect) |
 | `paths[].path` | Path tujuan di server |
+| `paths[].command` | Perintah default yang dijalankan setelah cd (opsional) |
 
 ---
 
@@ -144,6 +146,17 @@ hop dev-projek projek2   # path spesifik
 ```
 
 Kalau alias tidak ditemukan, `hop` menampilkan daftar host/path yang valid — tidak perlu tebak-tebakan.
+
+### Perintah default & override
+
+Setiap path bisa memiliki perintah default (field `command` di config) yang otomatis dijalankan setelah masuk ke direktori, sebelum shell interaktif muncul.
+
+```bash
+hop dev-projek projek2           # cd + command default (kalau ada)
+hop dev-projek projek2 -- htop   # override: jalankan htop, bukan command default
+```
+
+Jika path tidak ditemukan di server (fallback ke direktori default), perintah TIDAK dijalankan — Anda langsung masuk ke shell biasa.
 
 ### Manajemen host & path
 

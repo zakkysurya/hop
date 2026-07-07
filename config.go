@@ -14,8 +14,9 @@ var oldConfigDir = filepath.Join(os.Getenv("HOME"), ".config", "devjump")
 var oldConfigPath = filepath.Join(oldConfigDir, "config.yaml")
 
 type PathAlias struct {
-	Alias string `yaml:"alias"`
-	Path  string `yaml:"path"`
+	Alias   string `yaml:"alias"`
+	Path    string `yaml:"path"`
+	Command string `yaml:"command,omitempty"`
 }
 
 type Host struct {

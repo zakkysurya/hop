@@ -17,12 +17,22 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error migrating config schema: %v\n", err)
 	}
 
-	if len(os.Args) < 2 {
+	var overrideCmd string
+	args := os.Args[1:]
+	for i, a := range os.Args {
+		if a == "--" {
+			overrideCmd = strings.Join(os.Args[i+1:], " ")
+			args = os.Args[1:i]
+			break
+		}
+	}
+
+	if len(args) < 1 {
 		printUsage(true)
 		return
 	}
 
-	if os.Args[1] == "--complete-hosts" {
+	if args[0] == "--complete-hosts" {
 		cfg, err := LoadConfig()
 		if err != nil {
 			return
@@ -33,13 +43,13 @@ func main() {
 		return
 	}
 
-	if os.Args[1] == "--complete-paths" && len(os.Args) >= 3 {
+	if args[0] == "--complete-paths" && len(args) >= 2 {
 		cfg, err := LoadConfig()
 		if err != nil {
 			return
 		}
 		for _, h := range cfg.Hosts {
-			if h.Alias == os.Args[2] {
+			if h.Alias == args[1] {
 				for _, p := range h.Paths {
 					fmt.Println(p.Alias)
 				}
@@ -49,7 +59,7 @@ func main() {
 		return
 	}
 
-	if os.Args[1] != "init" && !configExists() {
+	if args[0] != "init" && !configExists() {
 		fmt.Println("No config found, creating default config...")
 		if err := InitConfig(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error creating config: %v\n", err)
@@ -58,36 +68,36 @@ func main() {
 		fmt.Println("Default config created at", configPath)
 	}
 
-	cmd := os.Args[1]
+	cmd := args[0]
 	switch cmd {
 	case "list":
 		cmdList()
 	case "add":
 		cmdAdd()
 	case "edit":
-		cmdEdit()
+		cmdEdit(args)
 	case "remove":
-		cmdRemove()
+		cmdRemove(args)
 	case "path-add":
-		cmdPathAdd()
+		cmdPathAdd(args)
 	case "path-edit":
-		cmdPathEdit()
+		cmdPathEdit(args)
 	case "path-list":
-		cmdPathList()
+		cmdPathList(args)
 	case "path-remove":
-		cmdPathRemove()
+		cmdPathRemove(args)
 	case "init":
 		cmdInit()
 	case "completion":
-		cmdCompletion()
+		cmdCompletion(args)
 	case "help", "--help", "-h":
-		printUsage(true)
+		printUsage(false)
 	default:
 		pathAlias := ""
-		if len(os.Args) >= 3 {
-			pathAlias = os.Args[2]
+		if len(args) >= 2 {
+			pathAlias = args[1]
 		}
-		cmdConnect(cmd, pathAlias)
+		cmdConnect(cmd, pathAlias, overrideCmd)
 	}
 }
 
@@ -96,7 +106,7 @@ func printUsage(withBanner bool) {
 		printBanner()
 	}
 	fmt.Println(`Usage: hop <command> [args]
-       hop <host-alias> [path-alias]
+       hop <host-alias> [path-alias] [-- <command>]
 
 Management:
   list                 Show all hosts and their paths
@@ -214,6 +224,7 @@ func cmdAdd() {
 		pa := PathAlias{}
 		pa.Alias = promptRequired("  Alias path")
 		pa.Path = promptRequired("  Path")
+		pa.Command = prompt("  Command (opsional, kosongkan jika tidak ada)", "")
 
 		if findPathAlias(&h, pa.Alias) >= 0 {
 			fmt.Printf("  Path alias '%s' already exists in this host.\n", pa.Alias)
@@ -241,12 +252,12 @@ func cmdAdd() {
 	fmt.Printf("Host '%s' added.\n", h.Alias)
 }
 
-func cmdEdit() {
-	if len(os.Args) < 3 {
+func cmdEdit(args []string) {
+	if len(args) < 2 {
 		fmt.Println("Usage: hop edit <host-alias>")
 		return
 	}
-	alias := os.Args[2]
+	alias := args[1]
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -270,12 +281,12 @@ func cmdEdit() {
 	fmt.Printf("Host '%s' updated.\n", h.Alias)
 }
 
-func cmdRemove() {
-	if len(os.Args) < 3 {
+func cmdRemove(args []string) {
+	if len(args) < 2 {
 		fmt.Println("Usage: hop remove <host-alias>")
 		return
 	}
-	alias := os.Args[2]
+	alias := args[1]
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -300,7 +311,7 @@ func cmdRemove() {
 	fmt.Printf("Host '%s' removed.\n", alias)
 }
 
-func cmdConnect(hostAlias string, pathAlias string) {
+func cmdConnect(hostAlias string, pathAlias string, overrideCmd string) {
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -328,21 +339,32 @@ func cmdConnect(hostAlias string, pathAlias string) {
 
 	pathIdx := findPathAlias(&host, pathAlias)
 	if pathIdx < 0 {
-		fmt.Printf("Path alias '%s' tidak ditemukan untuk host '%s'. Silakan tambahkan path terlebih dahulu.\n", pathAlias, hostAlias)
+		fmt.Printf("Path alias '%s' tidak ditemukan untuk host '%s'.\n", pathAlias, hostAlias)
+		fmt.Println("Path yang tersedia:")
+		for _, p := range host.Paths {
+			fmt.Printf("  - %s\n", p.Alias)
+		}
 		return
 	}
 
-	if err := SSHConnect(host, host.Paths[pathIdx].Path); err != nil {
+	targetPath := host.Paths[pathIdx].Path
+	defaultCmd := host.Paths[pathIdx].Command
+	finalCmd := defaultCmd
+	if overrideCmd != "" {
+		finalCmd = overrideCmd
+	}
+
+	if err := SSHConnect(host, targetPath, finalCmd); err != nil {
 		fmt.Fprintf(os.Stderr, "SSH error: %v\n", err)
 	}
 }
 
-func cmdPathAdd() {
-	if len(os.Args) < 3 {
+func cmdPathAdd(args []string) {
+	if len(args) < 2 {
 		fmt.Println("Usage: hop path-add <host-alias>")
 		return
 	}
-	alias := os.Args[2]
+	alias := args[1]
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -358,6 +380,7 @@ func cmdPathAdd() {
 	pa := PathAlias{}
 	pa.Alias = promptRequired("Alias path")
 	pa.Path = promptRequired("Path")
+	pa.Command = prompt("Command (opsional, kosongkan jika tidak ada)", "")
 
 	if findPathAlias(h, pa.Alias) >= 0 {
 		fmt.Printf("Path alias '%s' already exists in host '%s'.\n", pa.Alias, alias)
@@ -372,15 +395,15 @@ func cmdPathAdd() {
 	fmt.Printf("Path '%s' added to host '%s'.\n", pa.Alias, alias)
 }
 
-func cmdPathList() {
+func cmdPathList(args []string) {
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return
 	}
 
-	if len(os.Args) >= 3 {
-		alias := os.Args[2]
+	if len(args) >= 2 {
+		alias := args[1]
 		hIdx := findHost(cfg, alias)
 		if hIdx < 0 {
 			fmt.Printf("Host '%s' not found.\n", alias)
@@ -392,10 +415,10 @@ func cmdPathList() {
 			return
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-		fmt.Fprintln(w, "PATH ALIAS\tPATH")
-		fmt.Fprintln(w, "----------\t----")
+		fmt.Fprintln(w, "PATH ALIAS\tPATH\tCOMMAND")
+		fmt.Fprintln(w, "----------\t----\t-------")
 		for _, p := range h.Paths {
-			fmt.Fprintf(w, "%s\t%s\n", p.Alias, p.Path)
+			fmt.Fprintf(w, "%s\t%s\t%s\n", p.Alias, p.Path, p.Command)
 		}
 		w.Flush()
 		return
@@ -413,23 +436,23 @@ func cmdPathList() {
 		return
 	}
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
-	fmt.Fprintln(w, "HOST\tHOST (alias)\tPATH\tPATH (alias)")
-	fmt.Fprintln(w, "------------\t------------\t----\t------------")
+	fmt.Fprintln(w, "HOST\tHOST (alias)\tPATH\tPATH (alias)\tCOMMAND")
+	fmt.Fprintln(w, "------------\t------------\t----\t------------\t-------")
 	for _, h := range cfg.Hosts {
 		for _, p := range h.Paths {
-			fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", h.Host, h.Alias, p.Path, p.Alias)
+			fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", h.Host, h.Alias, p.Path, p.Alias, p.Command)
 		}
 	}
 	w.Flush()
 }
 
-func cmdPathEdit() {
-	if len(os.Args) < 4 {
+func cmdPathEdit(args []string) {
+	if len(args) < 3 {
 		fmt.Println("Usage: hop path-edit <host-alias> <path-alias>")
 		return
 	}
-	hostAlias := os.Args[2]
-	pathAlias := os.Args[3]
+	hostAlias := args[1]
+	pathAlias := args[2]
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -452,6 +475,7 @@ func cmdPathEdit() {
 	fmt.Println("Leave blank to keep current value.")
 	pa.Alias = prompt("Alias path", pa.Alias)
 	pa.Path = prompt("Path", pa.Path)
+	pa.Command = prompt("Command (opsional)", pa.Command)
 
 	if err := SaveConfig(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "Error saving config: %v\n", err)
@@ -460,13 +484,13 @@ func cmdPathEdit() {
 	fmt.Printf("Path '%s' updated for host '%s'.\n", pa.Alias, hostAlias)
 }
 
-func cmdPathRemove() {
-	if len(os.Args) < 4 {
+func cmdPathRemove(args []string) {
+	if len(args) < 3 {
 		fmt.Println("Usage: hop path-remove <host-alias> <path-alias>")
 		return
 	}
-	hostAlias := os.Args[2]
-	pathAlias := os.Args[3]
+	hostAlias := args[1]
+	pathAlias := args[2]
 	cfg, err := LoadConfig()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
@@ -499,8 +523,8 @@ func cmdPathRemove() {
 	fmt.Printf("Path '%s' removed from host '%s'.\n", pathAlias, hostAlias)
 }
 
-func cmdCompletion() {
-	if len(os.Args) >= 3 && os.Args[2] == "bash" {
+func cmdCompletion(args []string) {
+	if len(args) >= 2 && args[1] == "bash" {
 		fmt.Print(`_hop_completions() {
     local cur prev
     cur="${COMP_WORDS[COMP_CWORD]}"
