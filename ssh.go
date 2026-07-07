@@ -9,6 +9,18 @@ import (
 	"time"
 )
 
+func baseSSHArgs(h Host) []string {
+	args := []string{"-p", fmt.Sprintf("%d", h.Port)}
+	if h.IdentityFile != "" {
+		args = append(args, "-i", h.IdentityFile, "-o", "IdentitiesOnly=yes")
+	}
+	return args
+}
+
+func hostAddr(h Host) string {
+	return fmt.Sprintf("%s@%s", h.User, h.Host)
+}
+
 func withSpinner(label string, fn func() error) (time.Duration, error) {
 	done := make(chan struct{})
 	var elapsed time.Duration
@@ -43,17 +55,16 @@ func controlPath(h Host) string {
 
 func testConnection(h Host) error {
 	cp := controlPath(h)
-	addr := fmt.Sprintf("%s@%s", h.User, h.Host)
-	port := fmt.Sprintf("%d", h.Port)
-
-	cmd := exec.Command("ssh",
+	args := baseSSHArgs(h)
+	args = append(args,
 		"-T",
 		"-o", "ConnectTimeout=10",
 		"-o", "ControlMaster=auto",
 		"-o", "ControlPath="+cp,
 		"-o", "ControlPersist=30",
-		"-p", port, addr, "echo ok")
+		hostAddr(h), "echo ok")
 
+	cmd := exec.Command("ssh", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return parseSSHError(string(out), err)
@@ -81,15 +92,14 @@ func parseSSHError(output string, err error) error {
 
 func checkPathExists(h Host, path string) (bool, error) {
 	cp := controlPath(h)
-	addr := fmt.Sprintf("%s@%s", h.User, h.Host)
-	port := fmt.Sprintf("%d", h.Port)
-
-	cmd := exec.Command("ssh",
+	args := baseSSHArgs(h)
+	args = append(args,
 		"-T",
 		"-o", "ControlPath="+cp,
-		"-p", port, addr,
+		hostAddr(h),
 		fmt.Sprintf("test -d '%s' && echo FOUND || echo MISSING", path))
 
+	cmd := exec.Command("ssh", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return false, parseSSHError(string(out), err)
@@ -142,11 +152,11 @@ func SSHConnect(h Host, path string, command string) error {
 		fmt.Printf("→ Menjalankan: %s\n", command)
 	}
 
-	addr := fmt.Sprintf("%s@%s", h.User, h.Host)
-	port := fmt.Sprintf("%d", h.Port)
 	cp := controlPath(h)
+	sshArgs := baseSSHArgs(h)
+	sshArgs = append(sshArgs, "-t", "-o", "ControlPath="+cp, hostAddr(h), remoteCmd)
 
-	cmd := exec.Command("ssh", "-t", "-o", "ControlPath="+cp, "-p", port, addr, remoteCmd)
+	cmd := exec.Command("ssh", sshArgs...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -164,11 +174,49 @@ func SSHConnect(h Host, path string, command string) error {
 	return nil
 }
 
+func ExecRemote(h Host, path string, command string) int {
+	elapsed, err := withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
+		return testConnection(h)
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "✗ Gagal terhubung ke '%s': %v\n", h.Alias, err)
+		closeControlMaster(h)
+		return 1
+	}
+	fmt.Printf("✓ Terhubung ke %s dalam %dms\n", h.Alias, elapsed.Milliseconds())
+	defer closeControlMaster(h)
+
+	var remoteCmd string
+	if path != "" {
+		remoteCmd = fmt.Sprintf("cd '%s' && %s", path, command)
+	} else {
+		remoteCmd = command
+	}
+
+	cp := controlPath(h)
+	args := baseSSHArgs(h)
+	args = append(args, "-T", "-o", "ControlPath="+cp, hostAddr(h), remoteCmd)
+
+	cmd := exec.Command("ssh", args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			return exitErr.ExitCode()
+		}
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return 1
+	}
+	return 0
+}
+
 func closeControlMaster(h Host) {
 	cp := controlPath(h)
-	addr := fmt.Sprintf("%s@%s", h.User, h.Host)
-	port := fmt.Sprintf("%d", h.Port)
-	exec.Command("ssh", "-T", "-o", "ControlPath="+cp, "-p", port, addr, "-O", "exit").Run()
+	args := baseSSHArgs(h)
+	args = append(args, "-T", "-o", "ControlPath="+cp, hostAddr(h), "-O", "exit")
+	exec.Command("ssh", args...).Run()
 }
 
 func resetTerminalTitle() {

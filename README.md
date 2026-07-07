@@ -125,6 +125,7 @@ hosts:
 | `host` | IP atau hostname server SSH |
 | `user` | Username login SSH |
 | `port` | Port SSH (default `22`) |
+| `identity_file` | Path ke SSH private key (opsional) |
 | `paths[].alias` | Nama singkat direktori (dipakai saat connect) |
 | `paths[].path` | Path tujuan di server |
 | `paths[].command` | Perintah default yang dijalankan setelah cd (opsional) |
@@ -166,9 +167,31 @@ Jika path tidak ditemukan di server (fallback ke direktori default), perintah TI
 | `hop add` | Tambah host baru (interaktif) |
 | `hop edit <host>` | Ubah detail host |
 | `hop remove <host>` | Hapus host |
+| `hop doctor` | Cek koneksi ke semua host |
+| `hop exec <host> -- <cmd>` | Jalankan command non-interaktif |
 | `hop path-list [<host>]` | Lihat semua path (semua host / spesifik) |
 | `hop path-add <host>` | Tambah path baru ke host |
 | `hop path-remove <host> <path>` | Hapus path dari host |
+
+---
+
+### 🩺 Hop Doctor
+Cek koneksi ke semua host terdaftar sekaligus untuk memastikan server aktif.
+```bash
+hop doctor
+# Output:
+# ✓ dev-projek 1.2.3.4 — 45ms
+# ✗ prod-server 5.6.7.8 — koneksi ditolak
+# ...
+# Selesai: 1 OK, 1 gagal dari 2 host.
+```
+
+### ⚡ Hop Exec (Non-Interaktif)
+Jalankan perintah langsung di server tanpa masuk sesi shell interaktif. Berguna untuk automasi.
+```bash
+hop exec dev-projek -- echo "halo"
+hop exec dev-projek projek1 -- ls -l
+```
 
 <details>
 <summary>Contoh output <code>hop list</code></summary>

@@ -68,6 +68,11 @@ func main() {
 		fmt.Println("Default config created at", configPath)
 	}
 
+	if len(args) >= 1 && args[0] == "exec" {
+		cmdExec(args, overrideCmd)
+		return
+	}
+
 	cmd := args[0]
 	switch cmd {
 	case "list":
@@ -78,6 +83,8 @@ func main() {
 		cmdEdit(args)
 	case "remove":
 		cmdRemove(args)
+	case "doctor":
+		cmdDoctor()
 	case "path-add":
 		cmdPathAdd(args)
 	case "path-edit":
@@ -121,6 +128,8 @@ Paths:
   path-remove <host> <path>   Remove a path from a host
 
 Other:
+  doctor               Check connectivity for all configured hosts
+  exec    <host> [-- <cmd>]  Execute command non-interactively
   help                 Show this help message`)	
 }
 
@@ -213,6 +222,8 @@ func cmdAdd() {
 		h.Port = 22
 	}
 
+	h.IdentityFile = prompt("Path File SSH Key (opsional)", "")
+
 	if idx := findHost(cfg, h.Alias); idx >= 0 {
 		fmt.Printf("Host '%s' already exists. Use 'hop edit %s' to modify it.\n", h.Alias, h.Alias)
 		return
@@ -274,6 +285,7 @@ func cmdEdit(args []string) {
 	h.Host = prompt("Host", h.Host)
 	h.User = prompt("User", h.User)
 	h.Port, _ = strconv.Atoi(prompt("Port", strconv.Itoa(h.Port)))
+	h.IdentityFile = prompt("Path File SSH Key (opsional)", h.IdentityFile)
 	if err := SaveConfig(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "Error saving config: %v\n", err)
 		return
@@ -566,4 +578,79 @@ func cmdInit() {
 		return
 	}
 	fmt.Println("Default config created at", configPath)
+}
+
+func cmdDoctor() {
+	cfg, err := LoadConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return
+	}
+	if len(cfg.Hosts) == 0 {
+		fmt.Println("No hosts configured.")
+		return
+	}
+
+	fmt.Println("Memeriksa koneksi ke semua host...")
+	fmt.Println()
+
+	okCount, failCount := 0, 0
+	for _, h := range cfg.Hosts {
+		elapsed, err := withSpinner(fmt.Sprintf("Cek %s (%s)...", h.Alias, h.Host), func() error {
+			return testConnection(h)
+		})
+		if err != nil {
+			fmt.Printf("✗ %-20s %s — %v\n", h.Alias, h.Host, err)
+			failCount++
+		} else {
+			fmt.Printf("✓ %-20s %s — %dms\n", h.Alias, h.Host, elapsed.Milliseconds())
+			okCount++
+		}
+		closeControlMaster(h)
+	}
+
+	fmt.Println()
+	fmt.Printf("Selesai: %d OK, %d gagal dari %d host.\n", okCount, failCount, len(cfg.Hosts))
+}
+
+func cmdExec(args []string, command string) {
+	if command == "" {
+		fmt.Println("Usage: hop exec <host-alias> [path-alias] -- <command>")
+		fmt.Println("Command setelah -- wajib diisi untuk 'hop exec'.")
+		return
+	}
+	if len(args) < 2 {
+		fmt.Println("Usage: hop exec <host-alias> [path-alias] -- <command>")
+		return
+	}
+
+	hostAlias := args[1]
+	pathAlias := ""
+	if len(args) >= 3 {
+		pathAlias = args[2]
+	}
+
+	cfg, err := LoadConfig()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+	idx := findHost(cfg, hostAlias)
+	if idx < 0 {
+		fmt.Printf("Host '%s' not found. Use 'hop list' to see available hosts.\n", hostAlias)
+		os.Exit(1)
+	}
+	host := cfg.Hosts[idx]
+
+	targetPath := ""
+	if len(host.Paths) > 0 {
+		if pathAlias == "" {
+			targetPath = host.Paths[0].Path
+		} else if pIdx := findPathAlias(&host, pathAlias); pIdx >= 0 {
+			targetPath = host.Paths[pIdx].Path
+		}
+	}
+
+	exitCode := ExecRemote(host, targetPath, command)
+	os.Exit(exitCode)
 }

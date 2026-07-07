@@ -20,11 +20,12 @@ type PathAlias struct {
 }
 
 type Host struct {
-	Alias string      `yaml:"alias"`
-	Host  string      `yaml:"host"`
-	User  string      `yaml:"user"`
-	Port  int         `yaml:"port"`
-	Paths []PathAlias `yaml:"paths"`
+	Alias        string      `yaml:"alias"`
+	Host         string      `yaml:"host"`
+	User         string      `yaml:"user"`
+	Port         int         `yaml:"port"`
+	IdentityFile string      `yaml:"identity_file,omitempty"`
+	Paths        []PathAlias `yaml:"paths"`
 }
 
 type Config struct {
