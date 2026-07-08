@@ -1,10 +1,10 @@
 <div align="center">
 
-<img src="images/hop-banner.png" alt="hop — jump from laptop to server" width="600" />
+<img src="docs/images/hop-banner.png" alt="hop — jump from laptop to server" width="600" />
 
 
 
-# 🐇 hop
+# 🐇💨 hop
 **SSH Project Launcher & Directory Jumper**
 
 Lompat langsung ke server dan direktori project favorit Anda — tanpa `history | grep` lagi.
