@@ -32,6 +32,7 @@
             --gray-900: #111827;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { overflow-x: hidden; width: 100%; max-width: 100vw; }
         body { font-family: 'Inter', sans-serif; color: var(--gray-900); background: #fff; line-height: 1.7; }
         .container { max-width: 1020px; margin: 0 auto; padding: 0 1.5rem; }
         section { padding: 5rem 0; }
@@ -63,73 +64,65 @@
                         radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
         }
         .hero-logo {
+            width: 100%;
+            margin: 2rem auto 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            line-height: 1;
-            position: relative;
-            width: 100%;
-            margin: 0 auto;
-            margin-top: 2rem;
         }
-        .hero h1.hero-title {
-            font-size: 5.5rem;
-            font-weight: 800;
-            letter-spacing: -5px;
-            position: relative;
-            margin: 0;
-            display: inline-flex;
-            align-items: baseline;
-            color: rgba(255, 255, 255, 0.3);
-            -webkit-text-fill-color: transparent;
-            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4);
-            text-transform: uppercase;
-        }
-        .hero h1 .P-overlap {
-            position: relative;
-            margin: 0 -0.3rem;
-        }
-        .hero h1 .P-overlap::after {
-            content: '';
+        .hero-watermark {
             position: absolute;
-            background-image: url('https://zakkysurya.github.io/hop/images/hop-rabbit.png');
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            width: 3.8rem;
-            height: 3.8rem;
-            opacity: 0.9;
-            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.3));
-            left: 50%;
-            top: 55%;
-            transform: translate(-50%, -50%);
-            z-index: 2;
-            border-radius: 50%;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(190px, 32vw, 420px);
+            font-weight: 800;
+            letter-spacing: 8px;
+            line-height: 1;
+            white-space: nowrap;
+            color: transparent;
+            -webkit-text-stroke: 3px rgba(139, 124, 246, 0.24);
+            pointer-events: none;
+            user-select: none;
+            overflow: hidden;
+            z-index: 0;
         }
-        .hero h1 span {
-            color: rgba(59, 130, 246, 0.6);
-            -webkit-text-stroke: 2px rgba(59, 130, 246, 0.6);
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+        }
+        .hero-icon {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 52px;
+            line-height: 1;
+            animation: hop-float 2.6s ease-in-out infinite;
+        }
+        @keyframes hop-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
         .hero .tagline {
-            font-size: 1.3rem;
-            color: rgba(255, 255, 255, 0.2);
-            margin-top: 1rem;
+            font-size: 1.6rem;
+            color: rgba(255, 255, 255, 0.94);
+            margin-top: 0;
             position: relative;
-            font-weight: 300;
-            letter-spacing: 2px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
         .hero .subtitle {
             font-size: 1rem;
-            color: rgba(255, 255, 255, 0.15);
-            margin-top: 0.5rem;
+            color: rgba(255, 255, 255, 0.55);
+            margin-top: 0.6rem;
             position: relative;
             font-weight: 400;
         }
         .hero .subtitle code {
-            color: rgba(59, 130, 246, 0.8);
+            color: rgba(147, 197, 253, 0.9);
             border-color: rgba(59, 130, 246, 0.4);
-            background: rgba(59, 130, 246, 0.1);
+            background: rgba(59, 130, 246, 0.12);
         }
         .hero .badges { margin-top: 2rem; position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
         .hero .badges img { display: block; }
@@ -268,10 +261,10 @@
             section { padding: 3.5rem 0; }
             .container { padding: 0 1.25rem; }
             .hero { padding: 4rem 0 3.5rem; }
-            .hero-icon { font-size: 3rem; margin-bottom: -0.4rem; margin-left: 3.2rem; }
-            .hero h1 { font-size: 3.2rem; letter-spacing: -2px; }
-            .hero .tagline { font-size: 1.1rem; }
+            .hero-icon { font-size: 36px; margin-bottom: 14px; }
+            .hero .tagline { font-size: 1.3rem; }
             .hero .subtitle { font-size: 0.9rem; }
+            .hero-watermark { font-size: clamp(150px, 34vw, 260px); letter-spacing: 5px; }
             .hero-btns a { font-size: 0.9rem; padding: 0.7rem 1.5rem; }
             .features-grid, .config-layout, .usage-cards, .install-grid, .autocomplete-layout {
                 grid-template-columns: 1fr;
@@ -296,9 +289,10 @@
         }
 
         @media (max-width: 480px) {
-            .hero-icon { font-size: 2.5rem; margin-bottom: -0.3rem; margin-left: 2.6rem; }
-            .hero h1 { font-size: 2.5rem; }
+            .hero-icon { font-size: 28px; margin-bottom: 12px; }
+            .hero .tagline { font-size: 1.15rem; }
             .hero { padding: 3rem 0 2.5rem; }
+            .hero-watermark { font-size: clamp(100px, 38vw, 170px); letter-spacing: 3px; }
             section { padding: 2.5rem 0; }
             .section-title { font-size: 1.4rem; }
             .code-block pre { font-size: 0.7rem; padding: 0.75rem; }
@@ -312,21 +306,12 @@
 
     <!-- Hero -->
     <section class="hero">
+        <div class="hero-watermark" aria-hidden="true">HOP</div>
         <div class="container">
-            <div class="hero-logo" style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
-                <h1 class="hero-title" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: clamp(120px, 20vw, 260px); font-weight: 800; letter-spacing: 4px; line-height: 1; white-space: nowrap; color: transparent; -webkit-text-stroke: 2px rgba(139, 124, 246, 0.18); pointer-events: none; z-index: 0; overflow: hidden;">
-                    HOP
-                </h1>
-                <div class="hero-content" style="position: relative; z-index: 2;">
-                    <div class="hero-icon" style="text-align: center; margin-bottom: 20px; font-size: 52px; line-height: 1; animation: hop-float 2.6s ease-in-out infinite;">
-                        🐇💨
-                    </div>
-                    <h1 class="hero-title" style="font-size: 5.5rem; font-weight: 800; letter-spacing: -5px; position: relative; margin: 0; display: inline-flex; align-items: baseline; color: rgba(255, 255, 255, 0.3); -webkit-text-fill-color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4); text-transform: uppercase;">
-                        <span>H</span>
-                        <span class="P-overlap">O</span>
-                        <span>P</span>
-                    </h1>
-                    <p class="tagline">SSH Project Launcher &amp; Directory Jumper</p>
+            <div class="hero-logo">
+                <div class="hero-content">
+                    <div class="hero-icon" aria-hidden="true">🐇💨</div>
+                    <h1 class="tagline">SSH Project Launcher &amp; Directory Jumper</h1>
                     <p class="subtitle">Lompat langsung ke server dan direktori project favorit Anda — tanpa <code>history | grep</code> lagi.</p>
                     <div class="badges">
                         <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go 1.20+">
@@ -342,31 +327,6 @@
             </div>
         </div>
     </section>
-
-    <style>
-        @keyframes hop-float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
-        }
-        .hero-logo {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        @media (max-width: 768px) {
-            .hero .hero-icon {
-                font-size: 36px;
-            }
-        }
-        @media (max-width: 480px) {
-            .hero .hero-icon {
-                font-size: 28px;
-            }
-        }
-    </style>
 
     <!-- Problem -->
     <section class="problem-section">
