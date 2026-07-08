@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hop — SSH Project Launcher & Directory Jumper</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --blue: #3B82F6;
+            --blue-dark: #1D4ED8;
+            --green: #10B981;
+            --red: #EF4444;
+            --orange: #F59E0B;
+            --purple: #8B5CF6;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-300: #D1D5DB;
+            --gray-500: #6B7280;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; color: var(--gray-900); background: #fff; line-height: 1.7; }
+        .container { max-width: 1020px; margin: 0 auto; padding: 0 1.5rem; }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0F172A 100%);
+            color: #fff;
+            padding: 6rem 0 5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle at 30% 50%, rgba(59,130,246,0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
+        }
+        .hero h1 { font-size: 4rem; font-weight: 800; letter-spacing: -2px; position: relative; }
+        .hero h1 span { color: var(--blue); }
+        .hero .tagline {
+            font-size: 1.3rem;
+            color: #94A3B8;
+            margin-top: 1rem;
+            position: relative;
+            font-weight: 300;
+        }
+        .hero .subtitle {
+            font-size: 1rem;
+            color: #64748B;
+            margin-top: 0.5rem;
+            position: relative;
+        }
+        .hero .badges { margin-top: 2rem; position: relative; }
+        .hero .badges img { margin: 0 0.25rem; }
+        .hero-btns { margin-top: 2.5rem; position: relative; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .hero-btns a {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.85rem 2rem; border-radius: 0.5rem; font-weight: 600;
+            text-decoration: none; font-size: 1rem; transition: all 0.2s;
+        }
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+        .btn-outline { border: 1.5px solid #475569; color: #CBD5E1; background: transparent; }
+        .btn-outline:hover { border-color: #94A3B8; color: #fff; }
+
+        /* Sections */
+        section { padding: 5rem 0; }
+        .section-title {
+            font-size: 2.2rem; font-weight: 700; text-align: center;
+            color: var(--gray-900); margin-bottom: 0.75rem;
+        }
+        .section-subtitle {
+            text-align: center; color: var(--gray-500);
+            font-size: 1.1rem; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;
+        }
+
+        /* Problem */
+        .problem-section { background: var(--gray-50); }
+        .problem-box {
+            background: #fff; border: 1px solid var(--gray-200);
+            border-radius: 0.75rem; padding: 2.5rem; max-width: 700px; margin: 0 auto;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .problem-box .old-way {
+            background: #FEF2F2; border-left: 4px solid var(--red);
+            padding: 1rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            color: #991B1B; margin-bottom: 1rem;
+        }
+        .problem-box .new-way {
+            background: #F0FDF4; border-left: 4px solid var(--green);
+            padding: 1rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
+            color: #166534;
+        }
+
+        /* Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+        .feature-card {
+            background: #fff; border: 1px solid var(--gray-200);
+            border-radius: 0.75rem; padding: 2rem; transition: all 0.2s;
+            position: relative;
+        }
+        .feature-card:hover {
+            border-color: var(--blue);
+            box-shadow: 0 4px 16px rgba(59,130,246,0.1);
+            transform: translateY(-2px);
+        }
+        .feature-card .icon {
+            width: 48px; height: 48px; border-radius: 0.5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 1rem;
+        }
+        .feature-card h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .feature-card p { font-size: 0.95rem; color: var(--gray-500); line-height: 1.6; }
+
+        /* Config */
+        .config-section { background: var(--gray-50); }
+        .config-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .config-info p { color: var(--gray-700); margin-bottom: 1.5rem; font-size: 1.05rem; }
+        .config-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .config-table th { text-align: left; padding: 0.6rem 0; color: var(--gray-500); font-weight: 500; border-bottom: 2px solid var(--gray-200); }
+        .config-table td { padding: 0.6rem 0; border-bottom: 1px solid var(--gray-100); }
+        .config-table code { background: #EDE9FE; color: #6D28D9; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-size: 0.85rem; }
+
+        .code-block {
+            background: var(--gray-900); color: #E2E8F0;
+            border-radius: 0.75rem; overflow: hidden;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+        }
+        .code-block .code-header {
+            background: var(--gray-800); padding: 0.75rem 1.25rem;
+            font-size: 0.8rem; color: var(--gray-500); border-bottom: 1px solid #374151;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .code-block .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .code-block pre {
+            padding: 1.5rem; overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace; font-size: 0.88rem;
+            line-height: 1.7; margin: 0;
+        }
+        .code-block pre .comment { color: #6B7280; }
+        .code-block pre .key { color: #93C5FD; }
+        .code-block pre .value { color: #A7F3D0; }
+        .code-block pre .cmd { color: #FDE68A; }
+
+        /* Usage */
+        .usage-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .usage-card { border: 1px solid var(--gray-200); border-radius: 0.75rem; overflow: hidden; }
+        .usage-card .card-head { background: var(--gray-50); padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-200); }
+        .usage-card .card-head h4 { font-size: 0.95rem; font-weight: 600; }
+        .usage-card .card-body { padding: 1rem 1.5rem; }
+        .usage-card .card-body p { font-size: 0.9rem; color: var(--gray-500); margin-bottom: 0.75rem; }
+        .usage-card .card-body .inline-code {
+            font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;
+            background: var(--gray-900); color: #FDE68A;
+            padding: 0.75rem 1rem; border-radius: 0.5rem;
+            display: block; overflow-x: auto; white-space: nowrap;
+        }
+
+        /* Commands table */
+        .cmd-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .cmd-table th { text-align: left; padding: 0.9rem 1rem; background: var(--gray-900); color: #fff; }
+        .cmd-table td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--gray-200); }
+        .cmd-table tr:hover td { background: var(--gray-50); }
+        .cmd-table code { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--blue-dark); font-weight: 600; }
+
+        /* Install */
+        .install-section { background: var(--gray-50); }
+        .install-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .install-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 0.75rem; padding: 2rem; }
+        .install-card h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .install-card .desc { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 1rem; }
+        .install-card .req { font-size: 0.85rem; color: var(--gray-500); margin-top: 1rem; }
+
+        /* Autocomplete */
+        .autocomplete-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
+        .autocomplete-info h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; }
+        .autocomplete-info p { color: var(--gray-500); margin-bottom: 1rem; font-size: 1rem; }
+        .autocomplete-info ol { color: var(--gray-700); padding-left: 1.25rem; }
+        .autocomplete-info li { margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .autocomplete-info code { background: #EDE9FE; color: #6D28D9; padding: 0.15rem 0.4rem; border-radius: 0.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+
+        /* Footer */
+        footer {
+            background: var(--gray-900); color: var(--gray-500);
+            text-align: center; padding: 2.5rem 0;
+            font-size: 0.9rem;
+        }
+        footer a { color: #93C5FD; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .features-grid, .config-layout, .usage-cards, .install-grid, .autocomplete-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="container">
+            <h1>&#128007; <span>hop</span></h1>
+            <p class="tagline">SSH Project Launcher &amp; Directory Jumper</p>
+            <p class="subtitle">Lompat langsung ke server dan direktori project favorit Anda — tanpa <code>history | grep</code> lagi.</p>
+            <div class="badges">
+                <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go 1.20+">
+                <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License">
+                <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
+                <img src="https://img.shields.io/badge/build-single%20binary-success?style=flat-square" alt="Single Binary">
+            </div>
+            <div class="hero-btns">
+                <a href="#install" class="btn-primary">&#9654; Get Started</a>
+                <a href="https://github.com/zakkysurya/hop" class="btn-outline" target="_blank">&#128025; View on GitHub</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem -->
+    <section class="problem-section">
+        <div class="container">
+            <h2 class="section-title">Masalah yang Sering Dihadapi</h2>
+            <p class="section-subtitle">Menghafal IP, nama user, dan direktori project di setiap server? Itu masa lalu.</p>
+            <div class="problem-box">
+                <div class="old-way">
+                    <div style="font-weight:600;margin-bottom:0.3rem;">Dulu:</div>
+                    $ history | grep &lt;ip&gt;<br>
+                    $ !&lt;no&gt;<br>
+                    $ history | grep &lt;project&gt;<br>
+                    $ !&lt;no&gt;
+                </div>
+                <div class="new-way">
+                    <div style="font-weight:600;margin-bottom:0.3rem;">Sekarang:</div>
+                    $ hop &lt;alias&gt; &#10024;
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Fitur Utama</h2>
+            <p class="section-subtitle">Dirancang untuk mempercepat workflow SSH development Anda sehari-hari.</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon" style="background:#EFF6FF;color:var(--blue);">&#128194;</div>
+                    <h3>Multi-Path per Host</h3>
+                    <p>Satu server bisa punya banyak direktori project, masing-masing dengan alias sendiri.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon" style="background:#ECFDF5;color:var(--green);">&#128640;</div>
+                    <h3>Auto Jumper</h3>
+                    <p>Otomatis <code>cd</code> ke path tujuan begitu SSH berhasil terhubung.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon" style="background:#FFF7ED;color:var(--orange);">&#128203;</div>
+                    <h3>Tabel Rapi</h3>
+                    <p>Output <code>hop list</code> &amp; <code>hop path-list</code> mudah dibaca sekilas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon" style="background:#F5F3FF;color:var(--purple);">&#128736;</div>
+                    <h3>Manajemen Interaktif</h3>
+                    <p><code>add</code>, <code>edit</code>, <code>remove</code>, <code>path-add</code>, <code>path-remove</code> — semua dipandu prompt.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon" style="background:#FEF3C7;color:#D97706;">&#128260;</div>
+                    <h3>Migrasi Otomatis</h3>
+                    <p>Config lama otomatis dicadangkan &amp; dikonversi ke skema terbaru.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon" style="background:#FEE2E2;color:var(--red);">&#9000;</div>
+                    <h3>Autocomplete Pintar</h3>
+                    <p>Tab-completion untuk command, alias host, dan alias path di Bash.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Config -->
+    <section class="config-section">
+        <div class="container">
+            <h2 class="section-title">Konfigurasi</h2>
+            <p class="section-subtitle">File <code>config.yaml</code> dibuat otomatis saat <code>hop</code> pertama kali dijalankan.</p>
+            <div class="config-layout">
+                <div class="config-info">
+                    <p>Lokasi config:</p>
+                    <table class="config-table">
+                        <tr><th>OS</th><th>Lokasi</th></tr>
+                        <tr><td>Linux / macOS</td><td><code>~/.config/hop/config.yaml</code></td></tr>
+                        <tr><td>Windows</td><td><code>%HOME%\.config\hop\config.yaml</code></td></tr>
+                    </table>
+                    <br>
+                    <table class="config-table">
+                        <tr><th>Field</th><th>Keterangan</th></tr>
+                        <tr><td><code>alias</code></td><td>Nama unik untuk memanggil host di CLI</td></tr>
+                        <tr><td><code>host</code></td><td>IP atau hostname server SSH</td></tr>
+                        <tr><td><code>user</code></td><td>Username login SSH</td></tr>
+                        <tr><td><code>port</code></td><td>Port SSH (default <code>22</code>)</td></tr>
+                        <tr><td><code>identity_file</code></td><td>Path ke SSH private key (opsional)</td></tr>
+                        <tr><td><code>paths[].alias</code></td><td>Nama singkat direktori</td></tr>
+                        <tr><td><code>paths[].path</code></td><td>Path tujuan di server</td></tr>
+                        <tr><td><code>paths[].command</code></td><td>Perintah default setelah cd (opsional)</td></tr>
+                    </table>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot" style="background:#EF4444;"></span>
+                        <span class="dot" style="background:#F59E0B;"></span>
+                        <span class="dot" style="background:#10B981;"></span>
+                        config.yaml
+                    </div>
+<pre><span class="key">hosts</span>:
+  - <span class="key">alias</span>: <span class="value">dev-projek</span>
+    <span class="key">host</span>: <span class="value">xx.xx.xx.xx</span>
+    <span class="key">user</span>: <span class="value">root</span>
+    <span class="key">port</span>: <span class="value">22</span>
+    <span class="key">paths</span>:
+      - <span class="key">alias</span>: <span class="value">projek1</span>
+        <span class="key">path</span>: <span class="value">/var/www/html/projek1</span>
+      - <span class="key">alias</span>: <span class="value">projek2</span>
+        <span class="key">path</span>: <span class="value">/var/www/html/projek2</span>
+        <span class="key">command</span>: <span class="cmd">php artisan serve</span></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Penggunaan</h2>
+            <p class="section-subtitle">Cara cepat terhubung ke server dan menjalankan command remote.</p>
+            <div class="usage-cards">
+                <div class="usage-card">
+                    <div class="card-head"><h4>&#128640; Koneksi Cepat</h4></div>
+                    <div class="card-body">
+                        <p>Terhubung ke host dan otomatis masuk ke path pertama, atau pilih path spesifik.</p>
+                        <code class="inline-code">hop dev-projek</code><br><br>
+                        <code class="inline-code">hop dev-projek projek2</code>
+                    </div>
+                </div>
+                <div class="usage-card">
+                    <div class="card-head"><h4>&#9889; Override Command</h4></div>
+                    <div class="card-body">
+                        <p>Tentukan command sendiri setelah terhubung, menggantikan command default di config.</p>
+                        <code class="inline-code">hop dev-projek projek2 -- htop</code>
+                    </div>
+                </div>
+                <div class="usage-card">
+                    <div class="card-head"><h4>&#128270; Hop Doctor</h4></div>
+                    <div class="card-body">
+                        <p>Cek koneksi ke semua host terdaftar sekaligus untuk memastikan server aktif.</p>
+                        <code class="inline-code">hop doctor</code>
+                    </div>
+                </div>
+                <div class="usage-card">
+                    <div class="card-head"><h4>&#9881; Hop Exec (Non-Interaktif)</h4></div>
+                    <div class="card-body">
+                        <p>Jalankan perintah langsung di server tanpa masuk sesi shell. Cocok untuk automasi.</p>
+                        <code class="inline-code">hop exec dev-projek -- echo "halo"</code><br><br>
+                        <code class="inline-code">hop exec dev-projek projek1 -- ls -l</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- All Commands -->
+    <section style="background:var(--gray-50);">
+        <div class="container">
+            <h2 class="section-title">Semua Perintah</h2>
+            <p class="section-subtitle">Daftar lengkap command yang tersedia di <code>hop</code>.</p>
+            <div class="code-block" style="box-shadow:none;border:1px solid var(--gray-200);">
+                <table class="cmd-table">
+                    <thead>
+                        <tr><th style="width:35%;">Command</th><th>Fungsi</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>hop list</code></td><td>Lihat semua host terdaftar</td></tr>
+                        <tr><td><code>hop add</code></td><td>Tambah host baru (interaktif)</td></tr>
+                        <tr><td><code>hop edit &lt;host&gt;</code></td><td>Ubah detail host</td></tr>
+                        <tr><td><code>hop remove &lt;host&gt;</code></td><td>Hapus host</td></tr>
+                        <tr><td><code>hop doctor</code></td><td>Cek koneksi ke semua host</td></tr>
+                        <tr><td><code>hop exec &lt;host&gt; -- &lt;cmd&gt;</code></td><td>Jalankan command non-interaktif</td></tr>
+                        <tr><td><code>hop path-list [&lt;host&gt;]</code></td><td>Lihat semua path (semua host / spesifik)</td></tr>
+                        <tr><td><code>hop path-add &lt;host&gt;</code></td><td>Tambah path baru ke host</td></tr>
+                        <tr><td><code>hop path-edit &lt;host&gt; &lt;path&gt;</code></td><td>Ubah detail path</td></tr>
+                        <tr><td><code>hop path-remove &lt;host&gt; &lt;path&gt;</code></td><td>Hapus path dari host</td></tr>
+                        <tr><td><code>hop help</code></td><td>Tampilkan pesan bantuan</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Install -->
+    <section class="install-section" id="install">
+        <div class="container">
+            <h2 class="section-title">Instalasi</h2>
+            <p class="section-subtitle">Single binary, tanpa dependensi eksternal yang berat.</p>
+            <div class="install-grid">
+                <div class="install-card">
+                    <h3>&#128039; Linux / macOS</h3>
+                    <p class="desc">Prasyarat: Go 1.20+ (<code>go version</code>) dan binary <code>ssh</code> sudah terpasang.</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="dot" style="background:#EF4444;"></span>
+                            <span class="dot" style="background:#F59E0B;"></span>
+                            <span class="dot" style="background:#10B981;"></span>
+                            Terminal
+                        </div>
+<pre><span class="comment"># 1. Clone & compile</span>
+<span class="cmd">git clone</span> https://github.com/zakkysurya/hop.git
+<span class="cmd">cd</span> hop
+<span class="cmd">go build</span> -o hop .
+
+<span class="comment"># 2. Install ke PATH</span>
+<span class="cmd">cp</span> hop ~/.local/bin/
+<span class="comment"># atau untuk seluruh user:</span>
+<span class="cmd">sudo cp</span> hop /usr/local/bin/
+
+<span class="comment"># 3. Verifikasi</span>
+hop help</pre>
+                    </div>
+                </div>
+                <div class="install-card">
+                    <h3>&#129717; Windows</h3>
+                    <p class="desc">Prasyarat: Go compiler, OpenSSH Client aktif (default di Windows 10/11), PowerShell / Windows Terminal.</p>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="dot" style="background:#EF4444;"></span>
+                            <span class="dot" style="background:#F59E0B;"></span>
+                            <span class="dot" style="background:#10B981;"></span>
+                            PowerShell
+                        </div>
+<pre><span class="comment"># 1. Compile</span>
+<span class="cmd">go build</span> -o hop.exe .
+
+<span class="comment"># 2. Install ke folder khusus</span>
+<span class="cmd">New-Item</span> -ItemType Directory -Force -Path "C:\bin"
+<span class="cmd">Copy-Item</span> hop.exe -Destination "C:\bin\hop.exe"
+
+<span class="comment"># 3. Tambahkan C:\bin ke PATH</span>
+<span class="comment"># (Start Menu &rarr; "Edit the system environment variables")</span>
+
+<span class="comment"># 4. Verifikasi</span>
+hop.exe help</pre>
+                    </div>
+                    <p class="req">&#9888; Penting: <code>hop</code> mencari config lewat variabel <code>HOME</code>. Di Windows, tambahkan environment variable: <code>HOME</code> = <code>C:\Users\NamaUserAnda</code>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Autocomplete -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Autocomplete (Tab) di Bash</h2>
+            <p class="section-subtitle">Aktifkan sekali, pakai selamanya.</p>
+            <div class="autocomplete-layout">
+                <div class="autocomplete-info">
+                    <h3>Cara Aktifkan</h3>
+                    <div class="code-block" style="margin-bottom:1.5rem;">
+                        <div class="code-header">
+                            <span class="dot" style="background:#EF4444;"></span>
+                            <span class="dot" style="background:#F59E0B;"></span>
+                            <span class="dot" style="background:#10B981;"></span>
+                            Terminal
+                        </div>
+<pre><span class="cmd">hop</span> completion bash >> ~/.bashrc
+<span class="cmd">source</span> ~/.bashrc</pre>
+                    </div>
+                    <h3>Cara Pakai</h3>
+                    <ol>
+                        <li><code>hop &lt;Tab&gt;&lt;Tab&gt;</code> &mdash; daftar semua command &amp; host alias</li>
+                        <li><code>hop dev-&lt;Tab&gt;</code> &mdash; otomatis lengkap jadi <code>hop dev-projek</code></li>
+                        <li><code>hop dev-projek &lt;Tab&gt;</code> &mdash; daftar path-alias milik host tersebut</li>
+                    </ol>
+                </div>
+                <div>
+                    <div class="code-block">
+                        <div class="code-header">
+                            <span class="dot" style="background:#EF4444;"></span>
+                            <span class="dot" style="background:#F59E0B;"></span>
+                            <span class="dot" style="background:#10B981;"></span>
+                            Demo Autocomplete
+                        </div>
+<pre><span class="comment"># Tekan Tab untuk melihat opsi:</span>
+<span class="cmd">$</span> hop &lt;Tab&gt;
+<span class="value">list  add  edit  remove  path-list
+path-add  path-edit  path-remove  doctor
+dev-projek  prod-server  staging</span>
+
+<span class="comment"># Lengkapi host + path:</span>
+<span class="cmd">$</span> hop dev-projek &lt;Tab&gt;
+<span class="value">projek1  projek2</span>
+
+<span class="comment"># Override command:</span>
+<span class="cmd">$</span> hop dev-projek projek2 -- &lt;Tab&gt;
+<span class="value">htop  vim  nano  docker  git</span></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 hop &mdash; Made with &#10084; by <a href="https://github.com/zakkysurya" target="_blank">zakkysurya</a></p>
+            <p style="margin-top:0.5rem;font-size:0.8rem;color:#475569;">Lisensi MIT &bull; Dibuat untuk mempercepat workflow development sehari-hari &#128007;&#128168;</p>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -112,14 +112,13 @@ func printUsage(withBanner bool) {
 	if withBanner {
 		printBanner()
 	}
-	fmt.Println(`Usage: hop <command> [args]
-       hop <host-alias> [path-alias] [-- <command>]
+	fmt.Println(`Usage: hop <host-alias> [path-alias] [-- <command>]
 
 Management:
-  list                 Show all hosts and their paths
-  add                  Add a new host interactively
-  edit    <host>       Edit a host
-  remove  <host>       Remove a host
+  list            Show all hosts and their paths
+  add             Add a new host interactively
+  edit    <host>  Edit a host
+  remove  <host>  Remove a host
 
 Paths:
   path-list   [<host>]        List paths (all hosts, or specific host)
@@ -128,9 +127,9 @@ Paths:
   path-remove <host> <path>   Remove a path from a host
 
 Other:
-  doctor               Check connectivity for all configured hosts
+  doctor                     Check connectivity for all configured hosts
   exec    <host> [-- <cmd>]  Execute command non-interactively
-  help                 Show this help message`)	
+  help                       Show this help message`)	
 }
 
 var scanner = bufio.NewScanner(os.Stdin)
