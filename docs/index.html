@@ -34,6 +34,15 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; color: var(--gray-900); background: #fff; line-height: 1.7; }
         .container { max-width: 1020px; margin: 0 auto; padding: 0 1.5rem; }
+        section { padding: 5rem 0; }
+        .section-title {
+            font-size: 2.2rem; font-weight: 700; text-align: center;
+            color: var(--gray-900); margin-bottom: 0.75rem;
+        }
+        .section-subtitle {
+            text-align: center; color: var(--gray-500);
+            font-size: 1.1rem; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;
+        }
 
         /* Hero */
         .hero {
@@ -52,7 +61,28 @@
             background: radial-gradient(circle at 30% 50%, rgba(59,130,246,0.12) 0%, transparent 50%),
                         radial-gradient(circle at 70% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
         }
-        .hero h1 { font-size: 4rem; font-weight: 800; letter-spacing: -2px; position: relative; }
+        .hero-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+            position: relative;
+        }
+        .hero-icon {
+            font-size: 5rem;
+            line-height: 1;
+            margin-bottom: -1.5rem;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+        }
+        .hero h1 {
+            font-size: 5.5rem;
+            font-weight: 800;
+            letter-spacing: -3px;
+            position: relative;
+            margin: 0;
+        }
         .hero h1 span { color: var(--blue); }
         .hero .tagline {
             font-size: 1.3rem;
@@ -67,8 +97,8 @@
             margin-top: 0.5rem;
             position: relative;
         }
-        .hero .badges { margin-top: 2rem; position: relative; }
-        .hero .badges img { margin: 0 0.25rem; }
+        .hero .badges { margin-top: 2rem; position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+        .hero .badges img { display: block; }
         .hero-btns { margin-top: 2.5rem; position: relative; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
         .hero-btns a {
             display: inline-flex; align-items: center; gap: 0.5rem;
@@ -79,17 +109,6 @@
         .btn-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
         .btn-outline { border: 1.5px solid #475569; color: #CBD5E1; background: transparent; }
         .btn-outline:hover { border-color: #94A3B8; color: #fff; }
-
-        /* Sections */
-        section { padding: 5rem 0; }
-        .section-title {
-            font-size: 2.2rem; font-weight: 700; text-align: center;
-            color: var(--gray-900); margin-bottom: 0.75rem;
-        }
-        .section-subtitle {
-            text-align: center; color: var(--gray-500);
-            font-size: 1.1rem; margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;
-        }
 
         /* Problem */
         .problem-section { background: var(--gray-50); }
@@ -102,7 +121,7 @@
             background: #FEF2F2; border-left: 4px solid var(--red);
             padding: 1rem 1.5rem; border-radius: 0 0.5rem 0.5rem 0;
             font-family: 'JetBrains Mono', monospace; font-size: 0.9rem;
-            color: #991B1B; margin-bottom: 1rem;
+            color: #991B1B; margin-bottom: 1rem; overflow-x: auto;
         }
         .problem-box .new-way {
             background: #F0FDF4; border-left: 4px solid var(--green);
@@ -120,7 +139,6 @@
         .feature-card {
             background: #fff; border: 1px solid var(--gray-200);
             border-radius: 0.75rem; padding: 2rem; transition: all 0.2s;
-            position: relative;
         }
         .feature-card:hover {
             border-color: var(--blue);
@@ -154,7 +172,7 @@
             font-size: 0.8rem; color: var(--gray-500); border-bottom: 1px solid #374151;
             display: flex; align-items: center; gap: 0.5rem;
         }
-        .code-block .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .code-block .code-header .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
         .code-block pre {
             padding: 1.5rem; overflow-x: auto;
             font-family: 'JetBrains Mono', monospace; font-size: 0.88rem;
@@ -180,7 +198,8 @@
         }
 
         /* Commands table */
-        .cmd-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        .cmd-table-wrapper { overflow-x: auto; }
+        .cmd-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; min-width: 480px; }
         .cmd-table th { text-align: left; padding: 0.9rem 1rem; background: var(--gray-900); color: #fff; }
         .cmd-table td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--gray-200); }
         .cmd-table tr:hover td { background: var(--gray-50); }
@@ -212,10 +231,46 @@
         footer a:hover { text-decoration: underline; }
 
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
+            section { padding: 3.5rem 0; }
+            .container { padding: 0 1.25rem; }
+            .hero { padding: 4rem 0 3.5rem; }
+            .hero-icon { font-size: 3.5rem; margin-bottom: -1rem; }
+            .hero h1 { font-size: 3.2rem; letter-spacing: -2px; }
+            .hero .tagline { font-size: 1.1rem; }
+            .hero .subtitle { font-size: 0.9rem; }
+            .hero-btns a { font-size: 0.9rem; padding: 0.7rem 1.5rem; }
             .features-grid, .config-layout, .usage-cards, .install-grid, .autocomplete-layout {
                 grid-template-columns: 1fr;
             }
+            .section-title { font-size: 1.7rem; }
+            .section-subtitle { font-size: 1rem; margin-bottom: 2rem; }
+            .problem-box { padding: 1.5rem; }
+            .problem-box .old-way,
+            .problem-box .new-way { font-size: 0.8rem; padding: 0.75rem 1rem; }
+            .code-block pre { font-size: 0.78rem; padding: 1rem; }
+            .config-layout { gap: 1.5rem; }
+            .install-card { padding: 1.5rem; }
+            .autocomplete-layout { gap: 1.5rem; }
+            .cmd-table { font-size: 0.85rem; }
+            .cmd-table th,
+            .cmd-table td { padding: 0.7rem 0.75rem; }
+            .usage-card .card-head { padding: 0.75rem 1rem; }
+            .usage-card .card-head h4 { font-size: 0.9rem; }
+            .usage-card .card-body { padding: 0.75rem 1rem; }
+            .usage-card .card-body .inline-code { font-size: 0.8rem; padding: 0.6rem 0.75rem; }
+            footer { padding: 2rem 0; font-size: 0.85rem; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-icon { font-size: 2.8rem; margin-bottom: -0.8rem; }
+            .hero h1 { font-size: 2.5rem; }
+            .hero { padding: 3rem 0 2.5rem; }
+            section { padding: 2.5rem 0; }
+            .section-title { font-size: 1.4rem; }
+            .code-block pre { font-size: 0.7rem; padding: 0.75rem; }
+            .cmd-table { font-size: 0.78rem; min-width: 360px; }
+            .cmd-table th,
+            .cmd-table td { padding: 0.5rem 0.6rem; }
         }
     </style>
 </head>
@@ -224,7 +279,10 @@
     <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <h1>&#128007;&#128168; <span>hop</span></h1>
+            <div class="hero-logo">
+                <div class="hero-icon">&#128007;&#128168;</div>
+                <h1><span>hop</span></h1>
+            </div>
             <p class="tagline">SSH Project Launcher &amp; Directory Jumper</p>
             <p class="subtitle">Lompat langsung ke server dan direktori project favorit Anda — tanpa <code>history | grep</code> lagi.</p>
             <div class="badges">
@@ -396,24 +454,26 @@
             <h2 class="section-title">Semua Perintah</h2>
             <p class="section-subtitle">Daftar lengkap command yang tersedia di <code>hop</code>.</p>
             <div class="code-block" style="box-shadow:none;border:1px solid var(--gray-200);">
-                <table class="cmd-table">
-                    <thead>
-                        <tr><th style="width:35%;">Command</th><th>Fungsi</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td><code>hop list</code></td><td>Lihat semua host terdaftar</td></tr>
-                        <tr><td><code>hop add</code></td><td>Tambah host baru (interaktif)</td></tr>
-                        <tr><td><code>hop edit &lt;host&gt;</code></td><td>Ubah detail host</td></tr>
-                        <tr><td><code>hop remove &lt;host&gt;</code></td><td>Hapus host</td></tr>
-                        <tr><td><code>hop doctor</code></td><td>Cek koneksi ke semua host</td></tr>
-                        <tr><td><code>hop exec &lt;host&gt; -- &lt;cmd&gt;</code></td><td>Jalankan command non-interaktif</td></tr>
-                        <tr><td><code>hop path-list [&lt;host&gt;]</code></td><td>Lihat semua path (semua host / spesifik)</td></tr>
-                        <tr><td><code>hop path-add &lt;host&gt;</code></td><td>Tambah path baru ke host</td></tr>
-                        <tr><td><code>hop path-edit &lt;host&gt; &lt;path&gt;</code></td><td>Ubah detail path</td></tr>
-                        <tr><td><code>hop path-remove &lt;host&gt; &lt;path&gt;</code></td><td>Hapus path dari host</td></tr>
-                        <tr><td><code>hop help</code></td><td>Tampilkan pesan bantuan</td></tr>
-                    </tbody>
-                </table>
+                <div class="cmd-table-wrapper">
+                    <table class="cmd-table">
+                        <thead>
+                            <tr><th style="width:35%;">Command</th><th>Fungsi</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>hop list</code></td><td>Lihat semua host terdaftar</td></tr>
+                            <tr><td><code>hop add</code></td><td>Tambah host baru (interaktif)</td></tr>
+                            <tr><td><code>hop edit &lt;host&gt;</code></td><td>Ubah detail host</td></tr>
+                            <tr><td><code>hop remove &lt;host&gt;</code></td><td>Hapus host</td></tr>
+                            <tr><td><code>hop doctor</code></td><td>Cek koneksi ke semua host</td></tr>
+                            <tr><td><code>hop exec &lt;host&gt; -- &lt;cmd&gt;</code></td><td>Jalankan command non-interaktif</td></tr>
+                            <tr><td><code>hop path-list [&lt;host&gt;]</code></td><td>Lihat semua path (semua host / spesifik)</td></tr>
+                            <tr><td><code>hop path-add &lt;host&gt;</code></td><td>Tambah path baru ke host</td></tr>
+                            <tr><td><code>hop path-edit &lt;host&gt; &lt;path&gt;</code></td><td>Ubah detail path</td></tr>
+                            <tr><td><code>hop path-remove &lt;host&gt; &lt;path&gt;</code></td><td>Hapus path dari host</td></tr>
+                            <tr><td><code>hop help</code></td><td>Tampilkan pesan bantuan</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
