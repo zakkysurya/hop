@@ -65,37 +65,77 @@
         .hero-logo {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 0;
+            justify-content: flex-start;
+            gap: 0.5rem;
             line-height: 1;
             position: relative;
             width: 100%;
             margin: 0 auto;
         }
-        hero-icon, h1 {
-                margin-left: -0.8rem;
-                margin-right: -0.8rem;
-            }
-        .hero h1 {
+        .hero h1.hero-title {
             font-size: 5.5rem;
             font-weight: 800;
-            letter-spacing: -3px;
+            letter-spacing: -5px;
             position: relative;
             margin: 0;
+            display: inline-flex;
+            align-items: baseline;
+            color: rgba(255, 255, 255, 0.3);
+            -webkit-text-fill-color: transparent;
+            -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
         }
-        .hero h1 span { color: var(--blue); }
+        .hero .P-overlap {
+            position: relative;
+            margin: 0 -0.3rem;
+        }
+        .hero .P-overlap::after {
+            content: '';
+            position: absolute;
+            background-image: url('https://zakkysurya.github.io/hop/images/hop-rabbit.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            width: 3.8rem;
+            height: 3.8rem;
+            opacity: 0.9;
+            filter: drop-shadow(0 3px 8px rgba(0,0,0,0.3));
+            left: 50%;
+            top: 55%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            border-radius: 50%;
+        }
+        .hero h1 span {
+            color: rgba(59, 130, 246, 0.6);
+            -webkit-text-stroke: 2px rgba(59, 130, 246, 0.6);
+        }
+        .hero .hero-icon-simple {
+            font-size: 4.5rem;
+            line-height: 1;
+            margin-bottom: -0.6rem;
+            margin-right: -1.5rem;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .hero .tagline {
             font-size: 1.3rem;
-            color: #94A3B8;
+            color: rgba(255, 255, 255, 0.2);
             margin-top: 1rem;
             position: relative;
             font-weight: 300;
+            letter-spacing: 2px;
         }
         .hero .subtitle {
             font-size: 1rem;
-            color: #64748B;
+            color: rgba(255, 255, 255, 0.15);
             margin-top: 0.5rem;
             position: relative;
+            font-weight: 400;
         }
         .hero .badges { margin-top: 2rem; position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
         .hero .badges img { display: block; }
@@ -280,8 +320,11 @@
     <section class="hero">
         <div class="container">
             <div class="hero-logo">
-                <div class="hero-icon">&#128007;&#128168;</div>
-                <h1><span>hop</span></h1>
+                <h1 class="hero-title">
+                    <span>H</span>
+                    <span class="P-overlap">O</span>
+                    <span>P</span>
+                </h1>
             </div>
             <p class="tagline">SSH Project Launcher &amp; Directory Jumper</p>
             <p class="subtitle">Lompat langsung ke server dan direktori project favorit Anda — tanpa <code>history | grep</code> lagi.</p>
