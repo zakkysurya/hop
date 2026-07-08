@@ -313,27 +313,60 @@
     <!-- Hero -->
     <section class="hero">
         <div class="container">
-            <div class="hero-logo">
-                <h1 class="hero-title">
-                    <span>H</span>
-                    <span class="P-overlap">O</span>
-                    <span>P</span>
+            <div class="hero-logo" style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                <h1 class="hero-title" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: clamp(120px, 20vw, 260px); font-weight: 800; letter-spacing: 4px; line-height: 1; white-space: nowrap; color: transparent; -webkit-text-stroke: 2px rgba(139, 124, 246, 0.18); pointer-events: none; z-index: 0; overflow: hidden;">
+                    HOP
                 </h1>
-            </div>
-            <p class="tagline">SSH Project Launcher &amp; Directory Jumper</p>
-            <p class="subtitle">Lompat langsung ke server dan direktori project favorit Anda — tanpa <code>history | grep</code> lagi.</p>
-            <div class="badges">
-                <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go 1.20+">
-                <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License">
-                <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
-                <img src="https://img.shields.io/badge/build-single%20binary-success?style=flat-square" alt="Single Binary">
-            </div>
-            <div class="hero-btns">
-                <a href="#install" class="btn-primary">&#9654; Get Started</a>
-                <a href="https://github.com/zakkysurya/hop" class="btn-outline" target="_blank">&#128025; View on GitHub</a>
+                <div class="hero-content" style="position: relative; z-index: 2;">
+                    <div class="hero-icon" style="text-align: center; margin-bottom: 20px; font-size: 52px; line-height: 1; animation: hop-float 2.6s ease-in-out infinite;">
+                        🐇💨
+                    </div>
+                    <h1 class="hero-title" style="font-size: 5.5rem; font-weight: 800; letter-spacing: -5px; position: relative; margin: 0; display: inline-flex; align-items: baseline; color: rgba(255, 255, 255, 0.3); -webkit-text-fill-color: transparent; -webkit-text-stroke: 2px rgba(255, 255, 255, 0.4); text-transform: uppercase;">
+                        <span>H</span>
+                        <span class="P-overlap">O</span>
+                        <span>P</span>
+                    </h1>
+                    <p class="tagline">SSH Project Launcher &amp; Directory Jumper</p>
+                    <p class="subtitle">Lompat langsung ke server dan direktori project favorit Anda — tanpa <code>history | grep</code> lagi.</p>
+                    <div class="badges">
+                        <img src="https://img.shields.io/badge/Go-1.20%2B-00ADD8?style=flat-square&logo=go&logoColor=white" alt="Go 1.20+">
+                        <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="MIT License">
+                        <img src="https://img.shields.io/badge/platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=flat-square" alt="Platform">
+                        <img src="https://img.shields.io/badge/build-single%20binary-success?style=flat-square" alt="Single Binary">
+                    </div>
+                    <div class="hero-btns">
+                        <a href="#install" class="btn-primary">&#9654; Get Started</a>
+                        <a href="https://github.com/zakkysurya/hop" class="btn-outline" target="_blank">&#128025; View on GitHub</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
+    <style>
+        @keyframes hop-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .hero-logo {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (max-width: 768px) {
+            .hero .hero-icon {
+                font-size: 36px;
+            }
+        }
+        @media (max-width: 480px) {
+            .hero .hero-icon {
+                font-size: 28px;
+            }
+        }
+    </style>
 
     <!-- Problem -->
     <section class="problem-section">
