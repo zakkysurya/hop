@@ -160,7 +160,7 @@
         /* Features */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1.5rem;
         }
         .feature-card {
@@ -182,7 +182,7 @@
 
         /* Config */
         .config-section { background: var(--gray-50); }
-        .config-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: start; }
+        .config-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2rem; align-items: start; }
         .config-info p { color: var(--gray-700); margin-bottom: 1.5rem; font-size: 1.05rem; }
         .config-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
         .config-table th { text-align: left; padding: 0.6rem 0; color: var(--gray-500); font-weight: 500; border-bottom: 2px solid var(--gray-200); }
@@ -193,6 +193,7 @@
             background: var(--gray-900); color: #E2E8F0;
             border-radius: 0.75rem; overflow: hidden;
             box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+            min-width: 0;
         }
         .code-block .code-header {
             background: var(--gray-800); padding: 0.75rem 1.25rem;
@@ -211,7 +212,7 @@
         .code-block pre .cmd { color: #FDE68A; }
 
         /* Usage */
-        .usage-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+        .usage-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
         .usage-card { border: 1px solid var(--gray-200); border-radius: 0.75rem; overflow: hidden; }
         .usage-card .card-head { background: var(--gray-50); padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-200); }
         .usage-card .card-head h4 { font-size: 0.95rem; font-weight: 600; }
@@ -234,14 +235,14 @@
 
         /* Install */
         .install-section { background: var(--gray-50); }
-        .install-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
-        .install-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 0.75rem; padding: 2rem; }
+        .install-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem; }
+        .install-card { background: #fff; border: 1px solid var(--gray-200); border-radius: 0.75rem; padding: 2rem; min-width: 0; }
         .install-card h3 { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.5rem; }
         .install-card .desc { color: var(--gray-500); font-size: 0.9rem; margin-bottom: 1rem; }
         .install-card .req { font-size: 0.85rem; color: var(--gray-500); margin-top: 1rem; }
 
         /* Autocomplete */
-        .autocomplete-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; align-items: center; }
+        .autocomplete-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 2.5rem; align-items: center; }
         .autocomplete-info h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 1rem; }
         .autocomplete-info p { color: var(--gray-500); margin-bottom: 1rem; font-size: 1rem; }
         .autocomplete-info ol { color: var(--gray-700); padding-left: 1.25rem; }
@@ -267,7 +268,7 @@
             .hero-watermark { font-size: clamp(150px, 34vw, 260px); letter-spacing: 5px; }
             .hero-btns a { font-size: 0.9rem; padding: 0.7rem 1.5rem; }
             .features-grid, .config-layout, .usage-cards, .install-grid, .autocomplete-layout {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
             }
             .section-title { font-size: 1.7rem; }
             .section-subtitle { font-size: 1rem; margin-bottom: 2rem; }
