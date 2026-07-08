@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="hop-banner.png" alt="hop — jump from laptop to server" width="600" />
+<img src="images/hop-banner.png" alt="hop — jump from laptop to server" width="600" />
 
 
 
