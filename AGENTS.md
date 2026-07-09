@@ -9,7 +9,8 @@ berat kecuali benar-benar perlu (cobra boleh, database/ORM tidak boleh).
 2. Implementasi sesuai ACTION di order tersebut, jangan menambah fitur
    di luar scope tanpa order baru
 3. Jangan reinvent protokol SSH — selalu shell out ke binary `ssh` sistem
-4. Setelah implementasi, laporkan ringkas: file apa saja yang dibuat/diubah
+4. Setelah implementasi dan build sukses, copy binary ke ~/.local/bin/ (e.g. `cp ./hop ~/.local/bin/hop`) agar bisa langsung dipakai dari PATH
+5. Laporkan ringkas: file apa saja yang dibuat/diubah
 
 ## Struktur project
 - main.go — entrypoint & command routing

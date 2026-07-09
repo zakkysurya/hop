@@ -417,6 +417,7 @@
                         <tr><td><code>user</code></td><td>Username login SSH</td></tr>
                         <tr><td><code>port</code></td><td>Port SSH (default <code>22</code>)</td></tr>
                         <tr><td><code>identity_file</code></td><td>Path ke SSH private key (opsional)</td></tr>
+                        <tr><td><code>password</code></td><td>Password login SSH (opsional, alternatif dari identity_file)</td></tr>
                         <tr><td><code>paths[].alias</code></td><td>Nama singkat direktori</td></tr>
                         <tr><td><code>paths[].path</code></td><td>Path tujuan di server</td></tr>
                         <tr><td><code>paths[].command</code></td><td>Perintah default setelah cd (opsional)</td></tr>
@@ -434,6 +435,8 @@
     <span class="key">host</span>: <span class="value">xx.xx.xx.xx</span>
     <span class="key">user</span>: <span class="value">root</span>
     <span class="key">port</span>: <span class="value">22</span>
+    <span class="key">identity_file</span>: <span class="value">~/.ssh/id_rsa</span>
+    <span class="key">password</span>: <span class="value">secret123</span>
     <span class="key">paths</span>:
       - <span class="key">alias</span>: <span class="value">projek1</span>
         <span class="key">path</span>: <span class="value">/var/www/html/projek1</span>
@@ -480,6 +483,31 @@
                         <code class="inline-code">hop exec dev-projek -- echo "halo"</code><br><br>
                         <code class="inline-code">hop exec dev-projek projek1 -- ls -l</code>
                     </div>
+                </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem;margin-top:2.5rem;">
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot" style="background:#EF4444;"></span>
+                        <span class="dot" style="background:#F59E0B;"></span>
+                        <span class="dot" style="background:#10B981;"></span>
+                        hop list
+                    </div>
+<pre>IP/HOST      ALIAS       USER   PORT   PATHS
+-------      -----       ----   ----   -----
+xx.xx.xx.xx  dev-projek  root   22     projek1, projek2</pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot" style="background:#EF4444;"></span>
+                        <span class="dot" style="background:#F59E0B;"></span>
+                        <span class="dot" style="background:#10B981;"></span>
+                        hop path-list
+                    </div>
+<pre>IP/HOST      ALIAS       PATH                   PATH ALIAS
+-------      -----       ----                   ----------
+xx.xx.xx.xx  dev-projek  /var/www/html/projek1  projek1
+xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
                 </div>
             </div>
         </div>

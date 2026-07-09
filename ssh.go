@@ -13,6 +13,8 @@ func baseSSHArgs(h Host) []string {
 	args := []string{"-p", fmt.Sprintf("%d", h.Port)}
 	if h.IdentityFile != "" {
 		args = append(args, "-i", h.IdentityFile, "-o", "IdentitiesOnly=yes")
+	} else if h.Password != "" {
+		args = append(args, "-o", "PubkeyAuthentication=no", "-o", "PasswordAuthentication=yes")
 	}
 	return args
 }
@@ -54,15 +56,23 @@ func controlPath(h Host) string {
 }
 
 func testConnection(h Host) error {
-	cp := controlPath(h)
 	args := baseSSHArgs(h)
-	args = append(args,
-		"-T",
-		"-o", "ConnectTimeout=10",
-		"-o", "ControlMaster=auto",
-		"-o", "ControlPath="+cp,
-		"-o", "ControlPersist=30",
-		hostAddr(h), "echo ok")
+
+	if h.Password != "" {
+		args = append(args,
+			"-T",
+			"-o", "ConnectTimeout=10",
+			hostAddr(h), "echo ok")
+	} else {
+		cp := controlPath(h)
+		args = append(args,
+			"-T",
+			"-o", "ConnectTimeout=10",
+			"-o", "ControlMaster=auto",
+			"-o", "ControlPath="+cp,
+			"-o", "ControlPersist=30",
+			hostAddr(h), "echo ok")
+	}
 
 	cmd := exec.Command("ssh", args...)
 	out, err := cmd.CombinedOutput()
@@ -109,9 +119,48 @@ func checkPathExists(h Host, path string) (bool, error) {
 
 func SSHConnect(h Host, path string, command string) error {
 	defer resetTerminalTitle()
+
+	var elapsed time.Duration
+	var err error
+
+	if h.Password != "" {
+		// Password auth — langsung SSH, skip testConnection/ControlMaster
+		var remoteCmd string
+		switch {
+		case path != "" && command != "":
+			remoteCmd = fmt.Sprintf("cd '%s' && %s; exec bash -l", path, command)
+		case path != "":
+			remoteCmd = fmt.Sprintf("cd '%s' && exec bash -l", path)
+		default:
+			remoteCmd = "exec bash -l"
+		}
+
+		if path != "" && command != "" {
+			fmt.Printf("→ Menjalankan: %s\n", command)
+		}
+
+		args := baseSSHArgs(h)
+		args = append(args, "-t", hostAddr(h), remoteCmd)
+
+		cmd := exec.Command("ssh", args...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+					os.Exit(status.ExitStatus())
+				}
+			}
+			return err
+		}
+		return nil
+	}
+
 	defer closeControlMaster(h)
 
-	elapsed, err := withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
+	elapsed, err = withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
 		return testConnection(h)
 	})
 	if err != nil {
@@ -175,23 +224,39 @@ func SSHConnect(h Host, path string, command string) error {
 }
 
 func ExecRemote(h Host, path string, command string) int {
-	elapsed, err := withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
-		return testConnection(h)
-	})
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "✗ Gagal terhubung ke '%s': %v\n", h.Alias, err)
-		closeControlMaster(h)
-		return 1
-	}
-	fmt.Printf("✓ Terhubung ke %s dalam %dms\n", h.Alias, elapsed.Milliseconds())
-	defer closeControlMaster(h)
-
 	var remoteCmd string
 	if path != "" {
 		remoteCmd = fmt.Sprintf("cd '%s' && %s", path, command)
 	} else {
 		remoteCmd = command
 	}
+
+	if h.Password != "" {
+		// Password auth — langsung SSH tanpa ControlMaster
+		args := baseSSHArgs(h)
+		args = append(args, "-T", hostAddr(h), remoteCmd)
+		cmd := exec.Command("ssh", args...)
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				return exitErr.ExitCode()
+			}
+			fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			return 1
+		}
+		return 0
+	}
+
+	elapsed, err := withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
+		return testConnection(h)
+	})
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "✗ Gagal terhubung ke '%s': %v\n", h.Alias, err)
+		return 1
+	}
+	fmt.Printf("✓ Terhubung ke %s dalam %dms\n", h.Alias, elapsed.Milliseconds())
 
 	cp := controlPath(h)
 	args := baseSSHArgs(h)

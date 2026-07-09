@@ -25,6 +25,7 @@ type Host struct {
 	User         string      `yaml:"user"`
 	Port         int         `yaml:"port"`
 	IdentityFile string      `yaml:"identity_file,omitempty"`
+	Password     string      `yaml:"password,omitempty"`
 	Paths        []PathAlias `yaml:"paths"`
 }
 

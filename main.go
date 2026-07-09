@@ -221,6 +221,8 @@ func cmdAdd() {
 		h.Port = 22
 	}
 
+	h.Password = prompt("Password (opsional, kosongkan jika pakai SSH Key)", "")
+
 	h.IdentityFile = prompt("Path File SSH Key (opsional)", "")
 
 	if idx := findHost(cfg, h.Alias); idx >= 0 {
@@ -284,6 +286,13 @@ func cmdEdit(args []string) {
 	h.Host = prompt("Host", h.Host)
 	h.User = prompt("User", h.User)
 	h.Port, _ = strconv.Atoi(prompt("Port", strconv.Itoa(h.Port)))
+	oldPass := h.Password
+	password := prompt("Password (opsional, kosongkan biarkan seperti sebelumnya)", h.Password)
+	if password != "" {
+		h.Password = password
+	} else {
+		h.Password = oldPass
+	}
 	h.IdentityFile = prompt("Path File SSH Key (opsional)", h.IdentityFile)
 	if err := SaveConfig(cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "Error saving config: %v\n", err)
