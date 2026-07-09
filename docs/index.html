@@ -417,7 +417,7 @@
                         <tr><td><code>user</code></td><td>Username login SSH</td></tr>
                         <tr><td><code>port</code></td><td>Port SSH (default <code>22</code>)</td></tr>
                         <tr><td><code>identity_file</code></td><td>Path ke SSH private key (opsional)</td></tr>
-                        <tr><td><code>password</code></td><td>Password login SSH (opsional, alternatif dari identity_file; otomatis dicoba jika identity_file gagal)</td></tr>
+                        <tr><td><code>password</code></td><td><b>Hanya fallback legacy</b> &mdash; dipakai bila <code>secret-tool</code> tidak ada di sistem. Preferensi utama: disimpan di OS keyring (lihat <code>hop add</code>). Password lama di field ini otomatis dipindah ke keyring saat <code>hop</code> pertama dijalankan setelah update.</td></tr>
                         <tr><td><code>paths[].alias</code></td><td>Nama singkat direktori</td></tr>
                         <tr><td><code>paths[].path</code></td><td>Path tujuan di server</td></tr>
                         <tr><td><code>paths[].command</code></td><td>Perintah default setelah cd (opsional)</td></tr>
@@ -436,13 +436,49 @@
     <span class="key">user</span>: <span class="value">root</span>
     <span class="key">port</span>: <span class="value">22</span>
     <span class="key">identity_file</span>: <span class="value">~/.ssh/id_rsa</span>
-    <span class="key">password</span>: <span class="value">secret123</span>
+    <span class="comment"># password: secret123   # HANYA fallback legacy (bila secret-tool tak ada); sebaiknya kosong</span>
     <span class="key">paths</span>:
       - <span class="key">alias</span>: <span class="value">projek1</span>
         <span class="key">path</span>: <span class="value">/var/www/html/projek1</span>
       - <span class="key">alias</span>: <span class="value">projek2</span>
         <span class="key">path</span>: <span class="value">/var/www/html/projek2</span>
         <span class="key">command</span>: <span class="cmd">php artisan serve</span></pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Password / Keyring -->
+    <section>
+        <div class="container">
+            <h2 class="section-title">Password &amp; OS Keyring</h2>
+            <p class="section-subtitle">Password tidak lagi disimpan plaintext di <code>config.yaml</code>.</p>
+            <div class="config-layout">
+                <div class="config-info">
+                    <p>Sejak update terbaru, password host berbasis password disimpan ke <b>OS keyring</b> (melalui <code>secret-tool</code> / <code>gnome-keyring</code>) saat Anda menambah host:</p>
+                    <ul style="color:var(--gray-500);padding-left:1.25rem;line-height:1.9;font-size:0.95rem;">
+                        <li><b>Keyring sebagai utama</b> &mdash; password tersimpan terenkripsi di session desktop, <code>config.yaml</code> tetap 100% bebas credential.</li>
+                        <li><b>sshpass hanya untuk transport</b> &mdash; mengirim password ke <code>ssh</code> via environment variable, bukan untuk penyimpanan.</li>
+                        <li><b>Migrasi otomatis</b> &mdash; password lama di <code>config.yaml</code> dipindah ke keyring otomatis saat <code>hop</code> pertama dijalankan (config lama dicadangkan ke <code>config.yaml.prekeyring.bak</code>).</li>
+                        <li><b>Hapus bila perlu</b> &mdash; <code>hop secret-remove &lt;host&gt;</code> menghapus password dari keyring; host kembali pakai prompt manual dari <code>ssh</code>.</li>
+                    </ul>
+                    <p style="margin-top:1rem;font-size:0.9rem;color:var(--gray-500);">Bila <code>secret-tool</code> tidak tersedia, password tetap disimpan di <code>config.yaml</code> sebagai fallback legacy (dengan peringatan).</p>
+                </div>
+                <div class="code-block">
+                    <div class="code-header">
+                        <span class="dot" style="background:#EF4444;"></span>
+                        <span class="dot" style="background:#F59E0B;"></span>
+                        <span class="dot" style="background:#10B981;"></span>
+                        hop add
+                    </div>
+<pre><span class="comment"># Saat menambah host:</span>
+Gunakan autentikasi password? (y/N) [N]: <span class="value">y</span>
+Password: <span class="value">********</span>
+<span class="cmd">&#128274; Password disimpan di OS keyring.</span>
+
+<span class="comment"># Hapus dari keyring:</span>
+<span class="cmd">hop secret-remove</span> prod-server
+<span class="value">Password untuk 'prod-server' dihapus dari keyring.</span></pre>
                 </div>
             </div>
         </div>
@@ -535,6 +571,8 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
                             <tr><td><code>hop path-add &lt;host&gt;</code></td><td>Tambah path baru ke host</td></tr>
                             <tr><td><code>hop path-edit &lt;host&gt; &lt;path&gt;</code></td><td>Ubah detail path</td></tr>
                             <tr><td><code>hop path-remove &lt;host&gt; &lt;path&gt;</code></td><td>Hapus path dari host</td></tr>
+                            <tr><td><code>hop secret-remove &lt;host&gt;</code></td><td>Hapus password host dari OS keyring</td></tr>
+                            <tr><td><code>hop init</code></td><td>Buat config default bila belum ada</td></tr>
                             <tr><td><code>hop help</code></td><td>Tampilkan pesan bantuan</td></tr>
                         </tbody>
                     </table>
@@ -637,8 +675,9 @@ hop.exe help</pre>
                         </div>
 <pre><span class="comment"># Tekan Tab untuk melihat opsi:</span>
 <span class="cmd">$</span> hop &lt;Tab&gt;
-<span class="value">list  add  edit  remove  path-list
-path-add  path-edit  path-remove  doctor
+<span class="value">list  add  edit  remove  doctor  exec
+path-list  path-add  path-edit  path-remove
+secret-remove  init  help
 dev-projek  prod-server  staging</span>
 
 <span class="comment"># Lengkapi host + path:</span>

@@ -20,3 +20,4 @@ berat kecuali benar-benar perlu (cobra boleh, database/ORM tidak boleh).
 ## Larangan
 - JANGAN jalankan command git yang destruktif (reset --hard, clean -fd, push --force)
   tanpa konfirmasi eksplisit dari user
+- Nilai sensitif di-mask di output (misal cuma tampilkan *** atau jumlah karakter), bukan dicetak utuh

@@ -25,6 +25,10 @@ type Host struct {
 	User         string      `yaml:"user"`
 	Port         int         `yaml:"port"`
 	IdentityFile string      `yaml:"identity_file,omitempty"`
+	// Password: FALLBACK LEGACY, hanya dipakai kalau secret-tool
+	// tidak tersedia di sistem. Preferensi utama: simpan via OS
+	// keyring (lihat secret.go). Field ini akan otomatis dikosongkan
+	// begitu password berhasil dimigrasi ke keyring.
 	Password     string      `yaml:"password,omitempty"`
 	Paths        []PathAlias `yaml:"paths"`
 }
@@ -147,5 +151,39 @@ func migrateSchemaV1ToV2() error {
 		fmt.Println("Config lama (skema v1) berhasil dimigrasikan ke skema v2. Backup tersimpan di config.yaml.v1.bak.")
 	}
 
+	return nil
+}
+
+func migratePasswordsToKeyring() error {
+	if !secretToolAvailable() {
+		return nil // tidak bisa migrasi, biarkan Password field seperti apa adanya
+	}
+	cfg, err := LoadConfig()
+	if err != nil {
+		return nil
+	}
+	migrated := false
+	for i := range cfg.Hosts {
+		h := &cfg.Hosts[i]
+		if h.Password == "" {
+			continue
+		}
+		if err := storeSecret(h.Alias, h.Password); err != nil {
+			continue // gagal simpan ke keyring, JANGAN hapus password lama, coba lagi lain kali
+		}
+		h.Password = ""
+		migrated = true
+		fmt.Printf("🔒 Password untuk host '%s' dipindahkan ke OS keyring.\n", h.Alias)
+	}
+	if migrated {
+		backupPath := configPath + ".prekeyring.bak"
+		if data, err := os.ReadFile(configPath); err == nil {
+			os.WriteFile(backupPath, data, 0600)
+		}
+		if err := SaveConfig(cfg); err != nil {
+			return err
+		}
+		fmt.Println("Config lama dicadangkan di config.yaml.prekeyring.bak")
+	}
 	return nil
 }

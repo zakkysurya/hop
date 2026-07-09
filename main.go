@@ -16,6 +16,9 @@ func main() {
 	if err := migrateSchemaV1ToV2(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error migrating config schema: %v\n", err)
 	}
+	if err := migratePasswordsToKeyring(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error migrating passwords to keyring: %v\n", err)
+	}
 
 	var overrideCmd string
 	args := os.Args[1:]
@@ -99,6 +102,8 @@ func main() {
 		cmdCompletion(args)
 	case "help", "--help", "-h":
 		printUsage(false)
+	case "secret-remove":
+		cmdSecretRemove(args)
 	default:
 		pathAlias := ""
 		if len(args) >= 2 {
@@ -129,6 +134,7 @@ Paths:
 Other:
   doctor                     Check connectivity for all configured hosts
   exec    <host> [-- <cmd>]  Execute command non-interactively
+  secret-remove <host>       Remove a host's password from the OS keyring
   help                       Show this help message`)	
 }
 
@@ -221,7 +227,22 @@ func cmdAdd() {
 		h.Port = 22
 	}
 
-	h.Password = prompt("Password (opsional, kosongkan jika pakai SSH Key)", "")
+	usePassword := prompt("Gunakan autentikasi password? (y/N)", "N")
+	if strings.ToLower(usePassword) == "y" {
+		pw := promptRequired("Password")
+		if secretToolAvailable() {
+			if err := storeSecret(h.Alias, pw); err != nil {
+				fmt.Printf("⚠ Gagal simpan ke keyring (%v), password disimpan di config sebagai fallback.\n", err)
+				h.Password = pw
+			} else {
+				fmt.Println("🔒 Password disimpan di OS keyring.")
+			}
+		} else {
+			fmt.Println("⚠ secret-tool tidak ditemukan. Install: sudo apt install libsecret-tools")
+			fmt.Println("  Sementara, password disimpan di config.yaml (kurang aman).")
+			h.Password = pw
+		}
+	}
 
 	h.IdentityFile = prompt("Path File SSH Key (opsional)", "")
 
@@ -230,30 +251,27 @@ func cmdAdd() {
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("Tambah path untuk host ini:")
-	for {
-		pa := PathAlias{}
-		pa.Alias = promptRequired("  Alias path")
-		pa.Path = promptRequired("  Path")
-		pa.Command = prompt("  Command (opsional, kosongkan jika tidak ada)", "")
+	addPaths := prompt("Tambah path untuk host ini?", "N")
+	if strings.ToLower(addPaths) == "y" {
+		fmt.Println()
+		for {
+			pa := PathAlias{}
+			pa.Alias = promptRequired("  Alias path")
+			pa.Path = promptRequired("  Path")
+			pa.Command = prompt("  Command (opsional, kosongkan jika tidak ada)", "")
 
-		if findPathAlias(&h, pa.Alias) >= 0 {
-			fmt.Printf("  Path alias '%s' already exists in this host.\n", pa.Alias)
-			continue
+			if findPathAlias(&h, pa.Alias) >= 0 {
+				fmt.Printf("  Path alias '%s' already exists in this host.\n", pa.Alias)
+				continue
+			}
+
+			h.Paths = append(h.Paths, pa)
+
+			more := prompt("  Tambah path lain?", "N")
+			if strings.ToLower(more) != "y" {
+				break
+			}
 		}
-
-		h.Paths = append(h.Paths, pa)
-
-		more := prompt("  Tambah path lain?", "N")
-		if strings.ToLower(more) != "y" {
-			break
-		}
-	}
-
-	if len(h.Paths) == 0 {
-		fmt.Println("At least one path is required.")
-		return
 	}
 
 	cfg.Hosts = append(cfg.Hosts, h)
@@ -286,12 +304,25 @@ func cmdEdit(args []string) {
 	h.Host = prompt("Host", h.Host)
 	h.User = prompt("User", h.User)
 	h.Port, _ = strconv.Atoi(prompt("Port", strconv.Itoa(h.Port)))
-	oldPass := h.Password
-	password := prompt("Password (opsional, kosongkan biarkan seperti sebelumnya)", h.Password)
-	if password != "" {
-		h.Password = password
-	} else {
-		h.Password = oldPass
+	updatePass := prompt("Ubah password? (y/N)", "N")
+	if strings.ToLower(updatePass) == "y" {
+		pw := promptRequired("Password")
+		if h.Alias != alias {
+			deleteSecret(alias)
+		}
+		if secretToolAvailable() {
+			if err := storeSecret(h.Alias, pw); err != nil {
+				fmt.Printf("⚠ Gagal simpan ke keyring (%v), password disimpan di config sebagai fallback.\n", err)
+				h.Password = pw
+			} else {
+				fmt.Println("🔒 Password disimpan di OS keyring.")
+				h.Password = ""
+			}
+		} else {
+			fmt.Println("⚠ secret-tool tidak ditemukan. Install: sudo apt install libsecret-tools")
+			fmt.Println("  Sementara, password disimpan di config.yaml (kurang aman).")
+			h.Password = pw
+		}
 	}
 	h.IdentityFile = prompt("Path File SSH Key (opsional)", h.IdentityFile)
 	if err := SaveConfig(cfg); err != nil {
@@ -345,10 +376,12 @@ func cmdConnect(hostAlias string, pathAlias string, overrideCmd string) {
 	host := cfg.Hosts[idx]
 
 	if len(host.Paths) == 0 {
-		if pathAlias == "" {
-			fmt.Printf("Host '%s' belum memiliki path. Silakan tambahkan path terlebih dahulu.\n", hostAlias)
-		} else {
-			fmt.Printf("Path alias '%s' tidak ditemukan untuk host '%s'. Silakan tambahkan path terlebih dahulu.\n", pathAlias, hostAlias)
+		if pathAlias != "" {
+			fmt.Printf("Path alias '%s' tidak ditemukan untuk host '%s'.\n", pathAlias, hostAlias)
+			return
+		}
+		if err := SSHConnect(host, "", overrideCmd); err != nil {
+			fmt.Fprintf(os.Stderr, "SSH error: %v\n", err)
 		}
 		return
 	}
@@ -551,7 +584,7 @@ func cmdCompletion(args []string) {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [ "$COMP_CWORD" -eq 1 ]; then
-        COMPREPLY=($(compgen -W "$(hop --complete-hosts) list add edit remove path-list path-add path-edit path-remove init help" -- "$cur"))
+        COMPREPLY=($(compgen -W "$(hop --complete-hosts) list add edit remove path-list path-add path-edit path-remove init help secret-remove" -- "$cur"))
     elif [ "$COMP_CWORD" -eq 2 ]; then
         case "$prev" in
             edit|remove|path-list|path-add|path-edit|path-remove)
@@ -586,6 +619,19 @@ func cmdInit() {
 		return
 	}
 	fmt.Println("Default config created at", configPath)
+}
+
+func cmdSecretRemove(args []string) {
+	if len(args) < 2 {
+		fmt.Println("Usage: hop secret-remove <host-alias>")
+		return
+	}
+	alias := args[1]
+	if err := deleteSecret(alias); err != nil {
+		fmt.Printf("Tidak ada secret tersimpan untuk '%s', atau secret-tool tidak tersedia.\n", alias)
+		return
+	}
+	fmt.Printf("Password untuk '%s' dihapus dari keyring.\n", alias)
 }
 
 func cmdDoctor() {
