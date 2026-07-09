@@ -112,6 +112,7 @@ hosts:
     user: root
     port: 22
     identity_file: ~/.ssh/id_rsa
+    password: secret123
     paths:
       - alias: projek1
         path: /var/www/html/projek1
@@ -127,7 +128,7 @@ hosts:
 | `user` | Username login SSH |
 | `port` | Port SSH (default `22`) |
 | `identity_file` | Path ke SSH private key (opsional) |
-| `password` | Password login SSH (opsional, alternatif dari identity_file) |
+| `password` | Password login SSH (opsional, alternatif dari identity_file; otomatis dicoba jika identity_file gagal) |
 | `paths[].alias` | Nama singkat direktori (dipakai saat connect) |
 | `paths[].path` | Path tujuan di server |
 | `paths[].command` | Perintah default yang dijalankan setelah cd (opsional) |

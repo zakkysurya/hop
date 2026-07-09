@@ -19,6 +19,28 @@ func baseSSHArgs(h Host) []string {
 	return args
 }
 
+func keyOnlySSHArgs(h Host) []string {
+	args := []string{"-p", fmt.Sprintf("%d", h.Port)}
+	if h.IdentityFile != "" {
+		args = append(args, "-i", h.IdentityFile, "-o", "IdentitiesOnly=yes")
+	}
+	if h.Password != "" {
+		args = append(args, "-o", "PasswordAuthentication=no")
+	}
+	return args
+}
+
+func passwordSSHArgs(h Host) []string {
+	args := []string{"-p", fmt.Sprintf("%d", h.Port)}
+	if h.Password != "" {
+		args = append(args, "-o", "PubkeyAuthentication=no", "-o", "PasswordAuthentication=yes")
+	}
+	if h.IdentityFile != "" {
+		args = append(args, "-i", h.IdentityFile)
+	}
+	return args
+}
+
 func hostAddr(h Host) string {
 	return fmt.Sprintf("%s@%s", h.User, h.Host)
 }
@@ -56,14 +78,8 @@ func controlPath(h Host) string {
 }
 
 func testConnection(h Host) error {
-	args := baseSSHArgs(h)
-
-	if h.Password != "" {
-		args = append(args,
-			"-T",
-			"-o", "ConnectTimeout=10",
-			hostAddr(h), "echo ok")
-	} else {
+	if h.IdentityFile != "" {
+		args := keyOnlySSHArgs(h)
 		cp := controlPath(h)
 		args = append(args,
 			"-T",
@@ -72,8 +88,44 @@ func testConnection(h Host) error {
 			"-o", "ControlPath="+cp,
 			"-o", "ControlPersist=30",
 			hostAddr(h), "echo ok")
+		cmd := exec.Command("ssh", args...)
+		out, err := cmd.CombinedOutput()
+		if err == nil {
+			return nil
+		}
+		if h.Password != "" {
+			fmt.Printf("\n⚠ Gagal menggunakan SSH key, mencoba autentikasi dengan password...\n")
+		} else {
+			return parseSSHError(string(out), err)
+		}
 	}
 
+	if h.Password != "" {
+		args := passwordSSHArgs(h)
+		args = append(args,
+			"-T",
+			"-o", "ConnectTimeout=10",
+			hostAddr(h), "echo ok")
+		cmd := exec.Command("ssh", args...)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			if h.IdentityFile != "" {
+				return fmt.Errorf("autentikasi gagal — baik SSH key maupun password ditolak server: %s", strings.TrimSpace(string(out)))
+			}
+			return parseSSHError(string(out), err)
+		}
+		return nil
+	}
+
+	args := baseSSHArgs(h)
+	cp := controlPath(h)
+	args = append(args,
+		"-T",
+		"-o", "ConnectTimeout=10",
+		"-o", "ControlMaster=auto",
+		"-o", "ControlPath="+cp,
+		"-o", "ControlPersist=30",
+		hostAddr(h), "echo ok")
 	cmd := exec.Command("ssh", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -119,11 +171,16 @@ func checkPathExists(h Host, path string) (bool, error) {
 
 func SSHConnect(h Host, path string, command string) error {
 	defer resetTerminalTitle()
+	// Tidak perlu defer closeControlMaster(h) di sini, hapus
 
 	var elapsed time.Duration
 	var err error
 
-	if h.Password != "" {
+	// Penentuan auth method
+	usePassword := h.Password != ""
+	useKey := h.IdentityFile != ""
+
+	if usePassword {
 		// Password auth — langsung SSH, skip testConnection/ControlMaster
 		var remoteCmd string
 		switch {
@@ -158,6 +215,20 @@ func SSHConnect(h Host, path string, command string) error {
 		return nil
 	}
 
+	// Identity file (atau default SSH agent)
+	if useKey {
+		// Coba dengan key terlebih dahulu
+		elapsed, err = withSpinner(fmt.Sprintf("Mencoba koneksi menggunakan SSH key...", h.Alias, h.Host), func() error {
+			return testConnection(h)
+		})
+		if err == nil {
+			// Key auth berhasil
+			return doInteractiveSSH(h, path, command)
+		}
+		fmt.Printf("\n⚠ SSH key gagal — mencoba password (ada field password)...\n")
+	}
+
+	// Sisa proses (key gagal + no password, atau no key)
 	defer closeControlMaster(h)
 
 	elapsed, err = withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
@@ -193,8 +264,77 @@ func SSHConnect(h Host, path string, command string) error {
 		remoteCmd = fmt.Sprintf("cd '%s' && %s; exec bash -l", finalPath, command)
 	case finalPath != "":
 		remoteCmd = fmt.Sprintf("cd '%s' && exec bash -l", finalPath)
-	default:
-		remoteCmd = "exec bash -l"
+		default:
+			remoteCmd = "exec bash -l"
+	}
+
+	if finalPath != "" && command != "" {
+		fmt.Printf("→ Menjalankan: %s\n", command)
+	}
+
+	cp := controlPath(h)
+	sshArgs := baseSSHArgs(h)
+	sshArgs = append(sshArgs, "-t", "-o", "ControlPath="+cp, hostAddr(h), remoteCmd)
+
+	cmd := exec.Command("ssh", sshArgs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+				resetTerminalTitle()
+				closeControlMaster(h)
+				os.Exit(status.ExitStatus())
+			}
+		}
+		return err
+	}
+	return nil
+}
+
+// Fungsi helper untuk interactive SSH (key auth punya control master)
+func doInteractiveSSH(h Host, path string, command string) error {
+	var elapsed time.Duration
+	var err error
+
+	elapsed, err = withSpinner(fmt.Sprintf("Menyambungkan ke %s (%s)...", h.Alias, h.Host), func() error {
+		return testConnection(h)
+	})
+	if err != nil {
+		fmt.Printf("✗ Gagal terhubung ke '%s': %v\n", h.Alias, err)
+		closeControlMaster(h)
+		return nil
+	}
+	fmt.Printf("✓ Terhubung ke %s dalam %dms\n", h.Alias, elapsed.Milliseconds())
+
+	finalPath := path
+	_, err = withSpinner(fmt.Sprintf("Memeriksa direktori '%s'...", path), func() error {
+		found, checkErr := checkPathExists(h, path)
+		if checkErr != nil {
+			return checkErr
+		}
+		if !found {
+			finalPath = ""
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("⚠ Tidak bisa memeriksa direktori: %v\n", err)
+		finalPath = ""
+	} else if finalPath == "" && path != "" {
+		fmt.Printf("⚠ Direktori '%s' tidak ditemukan di server. Masuk ke direktori default.\n", path)
+	}
+
+	var remoteCmd string
+	switch {
+	case finalPath != "" && command != "":
+		remoteCmd = fmt.Sprintf("cd '%s' && %s; exec bash -l", finalPath, command)
+	case finalPath != "":
+		remoteCmd = fmt.Sprintf("cd '%s' && exec bash -l", finalPath)
+		default:
+			remoteCmd = "exec bash -l"
 	}
 
 	if finalPath != "" && command != "" {
