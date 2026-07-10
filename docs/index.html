@@ -311,7 +311,6 @@
 </head>
 <body>
 
-    <!-- Hero -->
     <section class="hero">
         <div class="hero-watermark" aria-hidden="true">HOP</div>
         <div class="container">
@@ -335,7 +334,6 @@
         </div>
     </section>
 
-    <!-- Problem -->
     <section class="problem-section">
         <div class="container">
             <h2 class="section-title">Masalah yang Sering Dihadapi</h2>
@@ -356,7 +354,6 @@
         </div>
     </section>
 
-    <!-- Features -->
     <section>
         <div class="container">
             <h2 class="section-title">Fitur Utama</h2>
@@ -373,30 +370,29 @@
                     <p>Otomatis <code>cd</code> ke path tujuan begitu SSH berhasil terhubung.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon" style="background:#FFF7ED;color:var(--orange);">&#128203;</div>
-                    <h3>Tabel Rapi</h3>
-                    <p>Output <code>hop list</code> &amp; <code>hop path-list</code> mudah dibaca sekilas.</p>
+                    <div class="icon" style="background:#F5F3FF;color:var(--purple);">&#128230;</div>
+                    <h3>Auto-Install Deps</h3>
+                    <p>Otomatis meminta sudo OS &amp; memasang dependensi keyring/sshpass (Debian/Ubuntu).</p>
                 </div>
                 <div class="feature-card">
-                    <div class="icon" style="background:#F5F3FF;color:var(--purple);">&#128736;</div>
-                    <h3>Manajemen Interaktif</h3>
-                    <p><code>add</code>, <code>edit</code>, <code>remove</code>, <code>path-add</code>, <code>path-remove</code> — semua dipandu prompt.</p>
+                    <div class="icon" style="background:#FFF7ED;color:var(--orange);">&#128203;</div>
+                    <h3>Tabel Rapi</h3>
+                    <p>Output <code>hop list</code> &amp; <code>hop path-list</code> terformat rapi dan mudah dibaca.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon" style="background:#FEF3C7;color:#D97706;">&#128260;</div>
                     <h3>Migrasi Otomatis</h3>
-                    <p>Config lama otomatis dicadangkan &amp; dikonversi ke skema terbaru.</p>
+                    <p>Config lama otomatis dicadangkan &amp; dipindahkan ke format keyring terbaru.</p>
                 </div>
                 <div class="feature-card">
                     <div class="icon" style="background:#FEE2E2;color:var(--red);">&#9000;</div>
                     <h3>Autocomplete Pintar</h3>
-                    <p>Tab-completion untuk command, alias host, dan alias path di Bash.</p>
+                    <p>Tab-completion interaktif untuk command, alias host, dan path di Bash.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Config -->
     <section class="config-section">
         <div class="container">
             <h2 class="section-title">Konfigurasi</h2>
@@ -417,7 +413,7 @@
                         <tr><td><code>user</code></td><td>Username login SSH</td></tr>
                         <tr><td><code>port</code></td><td>Port SSH (default <code>22</code>)</td></tr>
                         <tr><td><code>identity_file</code></td><td>Path ke SSH private key (opsional)</td></tr>
-                        <tr><td><code>password</code></td><td><b>Hanya fallback legacy</b> &mdash; dipakai bila <code>secret-tool</code> tidak ada di sistem. Preferensi utama: disimpan di OS keyring (lihat <code>hop add</code>). Password lama di field ini otomatis dipindah ke keyring saat <code>hop</code> pertama dijalankan setelah update.</td></tr>
+                        <tr><td><code>password</code></td><td><b>Hanya fallback legacy</b>. Disimpan otomatis ke OS keyring saat `hop add`.</td></tr>
                         <tr><td><code>paths[].alias</code></td><td>Nama singkat direktori</td></tr>
                         <tr><td><code>paths[].path</code></td><td>Path tujuan di server</td></tr>
                         <tr><td><code>paths[].command</code></td><td>Perintah default setelah cd (opsional)</td></tr>
@@ -436,7 +432,7 @@
     <span class="key">user</span>: <span class="value">root</span>
     <span class="key">port</span>: <span class="value">22</span>
     <span class="key">identity_file</span>: <span class="value">~/.ssh/id_rsa</span>
-    <span class="comment"># password: secret123   # HANYA fallback legacy (bila secret-tool tak ada); sebaiknya kosong</span>
+    <span class="comment"># password: secret123   # Akan dikosongkan & dipindah ke keyring</span>
     <span class="key">paths</span>:
       - <span class="key">alias</span>: <span class="value">projek1</span>
         <span class="key">path</span>: <span class="value">/var/www/html/projek1</span>
@@ -448,43 +444,43 @@
         </div>
     </section>
 
-    <!-- Password / Keyring -->
     <section>
         <div class="container">
-            <h2 class="section-title">Password &amp; OS Keyring</h2>
-            <p class="section-subtitle">Password tidak lagi disimpan plaintext di <code>config.yaml</code>.</p>
+            <h2 class="section-title">Password, Keyring &amp; Auto-Install</h2>
+            <p class="section-subtitle">Aman dari plaintext, dan 100% otomatis untuk user Debian/Ubuntu.</p>
             <div class="config-layout">
                 <div class="config-info">
-                    <p>Sejak update terbaru, password host berbasis password disimpan ke <b>OS keyring</b> (melalui <code>secret-tool</code> / <code>gnome-keyring</code>) saat Anda menambah host:</p>
+                    <p>Sejak update terbaru, password host disimpan ke <b>OS keyring</b> (melalui <code>secret-tool</code>) saat Anda menambah host:</p>
                     <ul style="color:var(--gray-500);padding-left:1.25rem;line-height:1.9;font-size:0.95rem;">
-                        <li><b>Keyring sebagai utama</b> &mdash; password tersimpan terenkripsi di session desktop, <code>config.yaml</code> tetap 100% bebas credential.</li>
-                        <li><b>sshpass hanya untuk transport</b> &mdash; mengirim password ke <code>ssh</code> via environment variable, bukan untuk penyimpanan.</li>
-                        <li><b>Migrasi otomatis</b> &mdash; password lama di <code>config.yaml</code> dipindah ke keyring otomatis saat <code>hop</code> pertama dijalankan (config lama dicadangkan ke <code>config.yaml.prekeyring.bak</code>).</li>
-                        <li><b>Hapus bila perlu</b> &mdash; <code>hop secret-remove &lt;host&gt;</code> menghapus password dari keyring; host kembali pakai prompt manual dari <code>ssh</code>.</li>
+                        <li><b>Auto-Install Sudo</b> &mdash; Pada Ubuntu/Debian, `hop` otomatis meminta password sudo OS Anda untuk memasang `sshpass` dan `libsecret-tools` secara diam-diam.</li>
+                        <li><b>Keyring Utama</b> &mdash; Password tersimpan terenkripsi di OS, <code>config.yaml</code> tetap 100% bebas dari teks rahasia.</li>
+                        <li><b>Migrasi otomatis</b> &mdash; Config lama dicadangkan dan password plaintext otomatis dipindah ke keyring.</li>
+                        <li><b>Hapus bila perlu</b> &mdash; <code>hop secret-remove &lt;host&gt;</code> untuk membuang password.</li>
                     </ul>
-                    <p style="margin-top:1rem;font-size:0.9rem;color:var(--gray-500);">Bila <code>secret-tool</code> tidak tersedia, password tetap disimpan di <code>config.yaml</code> sebagai fallback legacy (dengan peringatan).</p>
                 </div>
                 <div class="code-block">
                     <div class="code-header">
                         <span class="dot" style="background:#EF4444;"></span>
                         <span class="dot" style="background:#F59E0B;"></span>
                         <span class="dot" style="background:#10B981;"></span>
-                        hop add
+                        hop add (Auto-Install)
                     </div>
-<pre><span class="comment"># Saat menambah host:</span>
+<pre><span class="comment"># Saat menambah host di sistem Ubuntu/Debian baru:</span>
 Gunakan autentikasi password? (y/N) [N]: <span class="value">y</span>
-Password: <span class="value">********</span>
-<span class="cmd">&#128274; Password disimpan di OS keyring.</span>
+   &#128272; Membutuhkan akses sudo untuk instalasi. Masukkan password OS Anda: 
+    &#10003; libsecret-tools berhasil dipasang
+    &#10003; sshpass berhasil dipasang
+   &#128274; Password: <span class="value">********</span>
+   &#128274; Password disimpan di OS keyring (sistem penyimpanan kredensial aman...).
 
 <span class="comment"># Hapus dari keyring:</span>
 <span class="cmd">hop secret-remove</span> prod-server
-<span class="value">Password untuk 'prod-server' dihapus dari keyring.</span></pre>
+<span class="value">&#10003; Password untuk 'prod-server' dihapus dari keyring.</span></pre>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Usage -->
     <section>
         <div class="container">
             <h2 class="section-title">Penggunaan</h2>
@@ -549,7 +545,6 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
         </div>
     </section>
 
-    <!-- All Commands -->
     <section style="background:var(--section-alt-bg);">
         <div class="container">
             <h2 class="section-title">Semua Perintah</h2>
@@ -581,7 +576,70 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
         </div>
     </section>
 
-    <!-- Install -->
+    <section style="background:var(--section-alt-bg);">
+        <div class="container">
+            <h2 class="section-title">Dependency Requirements</h2>
+            <p class="section-subtitle">Semua package yang diperlukan untuk instalasi dan runtime.</p>
+            
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem;margin-top:2rem;">
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.75rem;">&#9873; Wajib (untuk semua fitur)</h3>
+                    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                        <tr style="border-bottom:1px solid var(--card-border);">
+                            <th style="text-align:left;padding:0.5rem 0;color:var(--gray-500);font-weight:500;">Package</th>
+                            <th style="text-align:left;padding:0.5rem 0;color:var(--gray-500);font-weight:500;">Tujuan</th>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--card-border);">
+                            <td style="padding:0.5rem 0;"><code>Go 1.20+</code></td>
+                            <td style="padding:0.5rem 0;">Bahasa pemrograman</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.5rem 0;"><code>ssh</code></td>
+                            <td style="padding:0.5rem 0;">Koneksi SSH, auto-login</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.75rem;">&#128757; Opsional Kontekstual</h3>
+                    <p style="font-size:0.8rem;color:var(--green);margin-bottom:0.8rem;">&#10004; Ubuntu/Debian: Auto-Installed oleh hop!</p>
+                    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                        <tr style="border-bottom:1px solid var(--card-border);">
+                            <th style="text-align:left;padding:0.5rem 0;color:var(--gray-500);font-weight:500;">Package</th>
+                            <th style="text-align:left;padding:0.5rem 0;color:var(--gray-500);font-weight:500;">Fitur</th>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--card-border);">
+                            <td style="padding:0.5rem 0;"><code>secret-tool</code></td>
+                            <td style="padding:0.5rem 0;">Penyimpanan password keyring</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid var(--card-border);">
+                            <td style="padding:0.5rem 0;"><code>sshpass</code></td>
+                            <td style="padding:0.5rem 0;">Auth password via sshpass</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.75rem;">&#128217; Development Only</h3>
+                    <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                        <tr>
+                            <th style="text-align:left;padding:0.5rem 0;color:var(--gray-500);font-weight:500;">Package</th>
+                            <th style="text-align:left;padding:0.5rem 0;color:var(--gray-500);font-weight:500;">Untuk</th>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.5rem 0;"><code>Go compiler</code></td>
+                            <td style="padding:0.5rem 0;">Build binary</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:0.5rem 0;"><code>git</code></td>
+                            <td style="padding:0.5rem 0;">Clone repository</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="install-section" id="install">
         <div class="container">
             <h2 class="section-title">Instalasi</h2>
@@ -640,7 +698,44 @@ hop.exe help</pre>
         </div>
     </section>
 
-    <!-- Autocomplete -->
+    <!-- Dependency Requirements -->
+    <section style="background:var(--section-alt-bg);">
+        <div class="container">
+            <h2 class="section-title">Dependency &amp; Requirement</h2>
+            <p class="section-subtitle">Package yang diperlukan untuk menjalankan hop.</p>
+
+            <div style="max-width:800px;margin:0 auto;">
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;margin-bottom:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">&#9873; Wajib (untuk semua fitur)</h3>
+                    <table class="config-table">
+                        <tr><th>Package</th><th>Tujuan</th></tr>
+                        <tr><td><code>Go 1.20+</code></td><td>Build dari source</td></tr>
+                        <tr><td><code>ssh (OpenSSH)</code></td><td>Koneksi SSH — bundling Linux/macOS/Windows 10+</td></tr>
+                    </table>
+                </div>
+
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;margin-bottom:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">&#128757; Opsional (auto-install jika dibutuhkan)</h3>
+                    <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:1rem;">hop otomatis mengecek dan menginstal package berikut saat Anda memilih autentikasi password:</p>
+                    <table class="config-table">
+                        <tr><th>Package</th><th>Fungsi</th></tr>
+                        <tr><td><code>libsecret-tools</code></td><td>Menyimpan password di OS keyring (via <code>secret-tool</code>)</td></tr>
+                        <tr><td><code>sshpass</code></td><td>Autentikasi password SSH non-interaktif</td></tr>
+                    </table>
+                </div>
+
+                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;">
+                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">&#128187; Development Only</h3>
+                    <table class="config-table">
+                        <tr><th>Package</th><th>Untuk</th></tr>
+                        <tr><td><code>Go compiler</code></td><td>Build binary dari source</td></tr>
+                        <tr><td><code>git</code></td><td>Clone repository (bukan kebutuhan runtime)</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section>
         <div class="container">
             <h2 class="section-title">Autocomplete (Tab) di Bash</h2>
@@ -693,7 +788,6 @@ dev-projek  prod-server  staging</span>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <p>&copy; 2026 hop &mdash; Made with &#10084; by <a href="https://github.com/zakkysurya" target="_blank">zakkysurya</a></p>

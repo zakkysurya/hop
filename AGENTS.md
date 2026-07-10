@@ -11,6 +11,8 @@ berat kecuali benar-benar perlu (cobra boleh, database/ORM tidak boleh).
 3. Jangan reinvent protokol SSH — selalu shell out ke binary `ssh` sistem
 4. Setelah implementasi dan build sukses, copy binary ke ~/.local/bin/ (e.g. `cp ./hop ~/.local/bin/hop`) agar bisa langsung dipakai dari PATH
 5. Laporkan ringkas: file apa saja yang dibuat/diubah
+6. Setelah mempelajari sebuah order, simpan daftar Todos yang dihasilkan ke file .context/logs/order-N-todos.md (N = nomor order terkait, misal order-12-todos.md), agar riwayat pengerjaan tiap order selalu tercatat dan tidak hilang.
+7. Setiap kali ada perubahan fitur/command/skema config, update juga README.md dan docs/index.html di commit yang sama supaya keduanya selalu sinkron dengan kondisi sistem terbaru.
 
 ## Struktur project
 - main.go — entrypoint & command routing
