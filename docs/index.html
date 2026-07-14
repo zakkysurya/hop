@@ -169,6 +169,12 @@
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1.5rem;
         }
+        .deps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
         .feature-card {
             background: var(--card-bg); border: 1px solid var(--card-border);
             border-radius: 0.75rem; padding: 2rem; transition: all 0.2s;
@@ -273,7 +279,7 @@
             .hero .subtitle { font-size: 0.9rem; }
             .hero-watermark { font-size: clamp(150px, 34vw, 260px); letter-spacing: 5px; }
             .hero-btns a { font-size: 0.9rem; padding: 0.7rem 1.5rem; }
-            .features-grid, .config-layout, .usage-cards, .install-grid, .autocomplete-layout {
+            .features-grid, .config-layout, .usage-cards, .install-grid, .autocomplete-layout, .deps-grid {
                 grid-template-columns: minmax(0, 1fr);
             }
             .section-title { font-size: 1.7rem; }
@@ -581,7 +587,7 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
             <h2 class="section-title">Dependency Requirements</h2>
             <p class="section-subtitle">Semua package yang diperlukan untuk instalasi dan runtime.</p>
             
-            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.5rem;margin-top:2rem;">
+            <div class="deps-grid">
                 <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;">
                     <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:0.75rem;">&#9873; Wajib (untuk semua fitur)</h3>
                     <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
@@ -698,43 +704,7 @@ hop.exe help</pre>
         </div>
     </section>
 
-    <!-- Dependency Requirements -->
-    <section style="background:var(--section-alt-bg);">
-        <div class="container">
-            <h2 class="section-title">Dependency &amp; Requirement</h2>
-            <p class="section-subtitle">Package yang diperlukan untuk menjalankan hop.</p>
 
-            <div style="max-width:800px;margin:0 auto;">
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;margin-bottom:1.5rem;">
-                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">&#9873; Wajib (untuk semua fitur)</h3>
-                    <table class="config-table">
-                        <tr><th>Package</th><th>Tujuan</th></tr>
-                        <tr><td><code>Go 1.20+</code></td><td>Build dari source</td></tr>
-                        <tr><td><code>ssh (OpenSSH)</code></td><td>Koneksi SSH — bundling Linux/macOS/Windows 10+</td></tr>
-                    </table>
-                </div>
-
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;margin-bottom:1.5rem;">
-                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">&#128757; Opsional (auto-install jika dibutuhkan)</h3>
-                    <p style="color:var(--gray-500);font-size:0.9rem;margin-bottom:1rem;">hop otomatis mengecek dan menginstal package berikut saat Anda memilih autentikasi password:</p>
-                    <table class="config-table">
-                        <tr><th>Package</th><th>Fungsi</th></tr>
-                        <tr><td><code>libsecret-tools</code></td><td>Menyimpan password di OS keyring (via <code>secret-tool</code>)</td></tr>
-                        <tr><td><code>sshpass</code></td><td>Autentikasi password SSH non-interaktif</td></tr>
-                    </table>
-                </div>
-
-                <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:0.75rem;padding:1.5rem;">
-                    <h3 style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">&#128187; Development Only</h3>
-                    <table class="config-table">
-                        <tr><th>Package</th><th>Untuk</th></tr>
-                        <tr><td><code>Go compiler</code></td><td>Build binary dari source</td></tr>
-                        <tr><td><code>git</code></td><td>Clone repository (bukan kebutuhan runtime)</td></tr>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section>
         <div class="container">
