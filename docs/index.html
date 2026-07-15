@@ -702,10 +702,23 @@ hop.exe help</pre>
                     <p class="req">&#9888; Penting: <code>hop</code> mencari config lewat variabel <code>HOME</code>. Di Windows, tambahkan environment variable: <code>HOME</code> = <code>C:\Users\NamaUserAnda</code>.</p>
                 </div>
             </div>
+            <div style="margin-top:2rem;text-align:center;">
+                <div class="code-block" style="display:inline-block;text-align:left;max-width:600px;width:100%;">
+                    <div class="code-header">
+                        <span class="dot" style="background:#EF4444;"></span>
+                        <span class="dot" style="background:#F59E0B;"></span>
+                        <span class="dot" style="background:#10B981;"></span>
+                        Update
+                    </div>
+<pre><span class="comment"># Tarik perubahan terbaru & rebuild</span>
+<span class="cmd">cd</span> hop
+<span class="cmd">git pull</span>
+<span class="cmd">go build -o hop . && cp hop ~/.local/bin/hop</span></pre>
+                </div>
+                <p style="color:var(--gray-500);font-size:0.85rem;margin-top:0.75rem;">Sudah pernah <code>git clone</code> sebelumnya? Cukup <code>git pull && go build -o hop . && cp hop ~/.local/bin/hop</code></p>
+            </div>
         </div>
     </section>
-
-
 
     <section>
         <div class="container">
@@ -763,8 +776,43 @@ dev-projek  prod-server  staging</span>
         <div class="container">
             <p>&copy; 2026 hop &mdash; Made with &#10084; by <a href="https://github.com/zakkysurya" target="_blank">zakkysurya</a></p>
             <p style="margin-top:0.5rem;font-size:0.8rem;color:#475569;">Lisensi MIT &bull; Dibuat untuk mempercepat workflow development sehari-hari &#128007;&#128168;</p>
+            <p style="margin-top:0.3rem;font-size:0.75rem;color:#374151;">Update terakhir: 15 Juli 2026</p>
         </div>
     </footer>
+
+<script>
+document.querySelectorAll('.code-block').forEach(function(block) {
+    var header = block.querySelector('.code-header');
+    if (!header) return;
+    var btn = document.createElement('span');
+    btn.textContent = '📋';
+    btn.title = 'Salin perintah';
+    btn.style.cssText = 'cursor:pointer;margin-left:auto;font-size:0.85rem;opacity:0.6;transition:opacity 0.15s;';
+    btn.onmouseenter = function() { btn.style.opacity = '1'; };
+    btn.onmouseleave = function() { btn.style.opacity = '0.6'; };
+    btn.onclick = function() {
+        var code = block.querySelector('pre');
+        if (!code) return;
+        var text = code.textContent.replace(/^[#$]\s/gm, '').trim() + '\n';
+        navigator.clipboard.writeText(text).then(function() {
+            btn.textContent = '✓';
+            setTimeout(function() { btn.textContent = '📋'; }, 2000);
+        });
+    };
+    header.appendChild(btn);
+});
+
+document.querySelectorAll('.inline-code').forEach(function(el) {
+    el.style.cursor = 'pointer';
+    el.title = 'Klik untuk salin';
+    el.onclick = function() {
+        navigator.clipboard.writeText(el.textContent.trim() + '\n');
+        var orig = el.textContent;
+        el.textContent = '✓ Tersalin!';
+        setTimeout(function() { el.textContent = orig; }, 1200);
+    };
+});
+</script>
 
 </body>
 </html>

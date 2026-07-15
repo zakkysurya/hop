@@ -97,6 +97,16 @@ hop.exe help
 
 ---
 
+## 🔄 Update
+
+```bash
+cd hop          # masuk ke direktori hasil clone
+git pull        # tarik perubahan terbaru
+go build -o hop . && cp hop ~/.local/bin/hop   # rebuild & pasang
+```
+
+---
+
 ## 📋 Dependency & Requirement
 
 ### Wajib (untuk semua fitur hop)
@@ -333,6 +343,10 @@ source ~/.bashrc
 3. `hop dev-projek <Tab>` → daftar path-alias milik host tersebut
 
 > 💡 Kalau beberapa alias berbagi awalan sama (`projek1`, `projek2`), Tab akan mengisi sebanyak yang unik (`projek`), lalu Anda lanjutkan ketik pembedanya.
+
+---
+
+*Update terakhir: 15 Juli 2026*
 
 ---
 
