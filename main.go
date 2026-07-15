@@ -222,7 +222,13 @@ func cmdAdd() {
 	}
 
 	h := Host{}
-	h.Alias = promptRequired("🏷 Alias host")
+	for {
+		h.Alias = promptRequired("🏷 Alias host")
+		if !strings.Contains(h.Alias, " ") {
+			break
+		}
+		fmt.Println("⚠ Alias tidak boleh mengandung spasi.")
+	}
 
 	if idx := findHost(cfg, h.Alias); idx >= 0 {
 		fmt.Printf("⚠ Host dengan alias '%s' sudah ada. Gunakan 'hop edit %s' untuk mengubahnya.\n", h.Alias, h.Alias)
@@ -263,6 +269,12 @@ func cmdAdd() {
 		for {
 			pa := PathAlias{}
 			pa.Alias = promptRequired("  📁 Alias path")
+
+			if strings.Contains(pa.Alias, " ") {
+				fmt.Println("  ⚠ Alias path tidak boleh mengandung spasi.")
+				continue
+			}
+
 			pa.Path = promptRequired("  📁 Path")
 			pa.Command = prompt("  ▶ Command (opsional, kosongkan jika tidak ada)", "")
 
@@ -306,7 +318,13 @@ func cmdEdit(args []string) {
 	}
 	h := &cfg.Hosts[idx]
 	fmt.Println("Kosongkan untuk mempertahankan nilai saat ini.")
-	h.Alias = prompt("🏷 Alias host", h.Alias)
+	for {
+		h.Alias = prompt("🏷 Alias host", h.Alias)
+		if !strings.Contains(h.Alias, " ") {
+			break
+		}
+		fmt.Println("⚠ Alias tidak boleh mengandung spasi.")
+	}
 	h.Host = prompt("🌐 Host", h.Host)
 	h.User = prompt("👤 User", h.User)
 	h.Port, _ = strconv.Atoi(prompt("🔌 Port", strconv.Itoa(h.Port)))
@@ -448,7 +466,13 @@ func cmdPathAdd(args []string) {
 	h := &cfg.Hosts[idx]
 
 	pa := PathAlias{}
-	pa.Alias = promptRequired("📁 Alias path")
+	for {
+		pa.Alias = promptRequired("📁 Alias path")
+		if !strings.Contains(pa.Alias, " ") {
+			break
+		}
+		fmt.Println("⚠ Alias path tidak boleh mengandung spasi.")
+	}
 	pa.Path = promptRequired("📁 Path")
 	pa.Command = prompt("▶ Command (opsional, kosongkan jika tidak ada)", "")
 
@@ -543,7 +567,13 @@ func cmdPathEdit(args []string) {
 
 	pa := &h.Paths[pIdx]
 	fmt.Println("Kosongkan untuk mempertahankan nilai saat ini.")
-	pa.Alias = prompt("📁 Alias path", pa.Alias)
+	for {
+		pa.Alias = prompt("📁 Alias path", pa.Alias)
+		if !strings.Contains(pa.Alias, " ") {
+			break
+		}
+		fmt.Println("⚠ Alias path tidak boleh mengandung spasi.")
+	}
 	pa.Path = prompt("📁 Path", pa.Path)
 	pa.Command = prompt("▶ Command (opsional)", pa.Command)
 
