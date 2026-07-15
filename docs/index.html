@@ -415,13 +415,13 @@
                     <br>
                     <table class="config-table">
                         <tr><th>Field</th><th>Keterangan</th></tr>
-                        <tr><td><code>alias</code></td><td>Nama unik untuk memanggil host di CLI</td></tr>
+                        <tr><td><code>alias</code></td><td>Nama unik untuk memanggil host di CLI (tidak boleh mengandung spasi)</td></tr>
                         <tr><td><code>host</code></td><td>IP atau hostname server SSH</td></tr>
                         <tr><td><code>user</code></td><td>Username login SSH</td></tr>
                         <tr><td><code>port</code></td><td>Port SSH (default <code>22</code>)</td></tr>
                         <tr><td><code>identity_file</code></td><td>Path ke SSH private key (opsional)</td></tr>
                         <tr><td><code>password</code></td><td><b>Hanya fallback legacy</b>. Disimpan otomatis ke OS keyring saat `hop add`.</td></tr>
-                        <tr><td><code>paths[].alias</code></td><td>Nama singkat direktori</td></tr>
+                        <tr><td><code>paths[].alias</code></td><td>Nama singkat direktori (tidak boleh mengandung spasi)</td></tr>
                         <tr><td><code>paths[].path</code></td><td>Path tujuan di server</td></tr>
                         <tr><td><code>paths[].command</code></td><td>Perintah default setelah cd (opsional)</td></tr>
                     </table>

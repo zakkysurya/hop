@@ -217,13 +217,13 @@ hosts:
 
 | Field | Keterangan |
 |-------|------------|
-| `alias` | Nama unik untuk memanggil host di CLI |
+| `alias` | Nama unik untuk memanggil host di CLI (tidak boleh mengandung spasi) |
 | `host` | IP atau hostname server SSH |
 | `user` | Username login SSH |
 | `port` | Port SSH (default `22`) |
 | `identity_file` | Path ke SSH private key (opsional) |
 | `password` | **Hanya fallback legacy** — preferensi utama: OS keyring |
-| `paths[].alias` | Nama singkat direktori (dipakai saat connect) |
+| `paths[].alias` | Nama singkat direktori (dipakai saat connect, tidak boleh mengandung spasi) |
 | `paths[].path` | Path tujuan di server |
 | `paths[].command` | Perintah default setelah cd (opsional) |
 
