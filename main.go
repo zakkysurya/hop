@@ -108,6 +108,12 @@ func main() {
 		printUsage(false)
 	case "secret-remove":
 		cmdSecretRemove(args)
+	case "logs":
+		cmdLogs()
+	case "logs-clear":
+		cmdLogsClear()
+	case "version", "--version", "-v":
+		fmt.Printf("hop v1.0 (2026-07-15)\n")
 	default:
 		pathAlias := ""
 		if len(args) >= 2 {
@@ -138,7 +144,10 @@ Path:
 Lainnya:
   doctor                     Cek konektivitas untuk semua Host yang terkonfigurasi
   exec    <host> [-- <cmd>]  Eksekusi Command secara non-interaktif
+  logs                       Tampilkan log aktivitas secara real-time
+  logs-clear                 Kosongkan seluruh isi log
   secret-remove <host>       Hapus password Host dari OS keyring
+  version                    Tampilkan versi hop
   help                       Tampilkan pesan bantuan ini`)
 }
 
@@ -167,6 +176,69 @@ func promptRequired(label string) string {
 		}
 		fmt.Println("⚠ Kolom ini wajib diisi.")
 	}
+}
+
+func isValidAlias(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_') {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidHost(s string) bool {
+	parts := strings.Split(s, ".")
+	if len(parts) != 4 {
+		return false
+	}
+	for _, p := range parts {
+		if p == "" {
+			return false
+		}
+		if p[0] == '0' && len(p) > 1 {
+			return false
+		}
+		n := 0
+		for _, r := range p {
+			if r < '0' || r > '9' {
+				return false
+			}
+			n = n*10 + int(r-'0')
+		}
+		if n < 0 || n > 255 {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidUsername(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_' || r == '.' || r == '-') {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidPort(s string) bool {
+	if s == "" {
+		return false
+	}
+	for _, r := range s {
+		if r < '0' || r > '9' {
+			return false
+		}
+	}
+	n, _ := strconv.Atoi(s)
+	return n >= 1 && n <= 65535
 }
 
 func findHost(cfg *Config, alias string) int {
@@ -224,10 +296,10 @@ func cmdAdd() {
 	h := Host{}
 	for {
 		h.Alias = promptRequired("🏷 Alias host")
-		if !strings.Contains(h.Alias, " ") {
+		if isValidAlias(h.Alias) {
 			break
 		}
-		fmt.Println("⚠ Alias tidak boleh mengandung spasi.")
+		fmt.Println("⚠ Alias hanya boleh berisi huruf, angka, strip (-), dan underscore (_).")
 	}
 
 	if idx := findHost(cfg, h.Alias); idx >= 0 {
@@ -235,18 +307,49 @@ func cmdAdd() {
 		return
 	}
 
-	h.Host = promptRequired("🌐 Host")
-	h.User = promptRequired("👤 User")
-	portStr := prompt("🔌 Port", "22")
-	h.Port, _ = strconv.Atoi(portStr)
-	if h.Port == 0 {
-		h.Port = 22
+	for {
+		fmt.Printf("🌐 Host: ")
+		if !scanner.Scan() {
+			return
+		}
+		h.Host = strings.TrimSpace(scanner.Text())
+		if h.Host == "" {
+			fmt.Println("⚠ Kolom ini wajib diisi.")
+			continue
+		}
+		if isValidHost(h.Host) {
+			break
+		}
+		fmt.Println("⚠ Host harus berupa alamat IPv4 yang valid (contoh: 192.168.1.1).")
+	}
+	for {
+		fmt.Printf("👤 User: ")
+		if !scanner.Scan() {
+			return
+		}
+		h.User = strings.TrimSpace(scanner.Text())
+		if h.User == "" {
+			fmt.Println("⚠ Kolom ini wajib diisi.")
+			continue
+		}
+		if isValidUsername(h.User) {
+			break
+		}
+		fmt.Println("⚠ User hanya boleh berisi huruf, angka, underscore (_), titik (.), dan strip (-).")
+	}
+	for {
+		portStr := prompt("🔌 Port", "22")
+		if isValidPort(portStr) {
+			h.Port, _ = strconv.Atoi(portStr)
+			break
+		}
+		fmt.Println("⚠ Port harus berupa angka 1-65535.")
 	}
 
 	usePassword := prompt("🔐 Gunakan autentikasi password? (y/N)", "N")
 	if strings.ToLower(usePassword) == "y" {
 		ensurePasswordToolsInstalled()
-		pw := promptRequired("   🔒 Password")
+		pw := readPassword("   🔒 Password")
 		if secretToolAvailable() {
 			if err := storeSecret(h.Alias, pw); err != nil {
 				fmt.Printf("⚠ Gagal simpan ke keyring (%v), password disimpan di config sebagai fallback.\n", err)
@@ -270,8 +373,8 @@ func cmdAdd() {
 			pa := PathAlias{}
 			pa.Alias = promptRequired("  📁 Alias path")
 
-			if strings.Contains(pa.Alias, " ") {
-				fmt.Println("  ⚠ Alias path tidak boleh mengandung spasi.")
+			if !isValidAlias(pa.Alias) {
+				fmt.Println("  ⚠ Alias hanya boleh berisi huruf, angka, strip (-), dan underscore (_).")
 				continue
 			}
 
@@ -320,14 +423,35 @@ func cmdEdit(args []string) {
 	fmt.Println("Kosongkan untuk mempertahankan nilai saat ini.")
 	for {
 		h.Alias = prompt("🏷 Alias host", h.Alias)
-		if !strings.Contains(h.Alias, " ") {
+		if h.Alias == "" || isValidAlias(h.Alias) {
 			break
 		}
-		fmt.Println("⚠ Alias tidak boleh mengandung spasi.")
+		fmt.Println("⚠ Alias hanya boleh berisi huruf, angka, strip (-), dan underscore (_).")
 	}
-	h.Host = prompt("🌐 Host", h.Host)
-	h.User = prompt("👤 User", h.User)
-	h.Port, _ = strconv.Atoi(prompt("🔌 Port", strconv.Itoa(h.Port)))
+	for {
+		h.Host = prompt("🌐 Host", h.Host)
+		if h.Host == "" || isValidHost(h.Host) {
+			break
+		}
+		fmt.Println("⚠ Host harus berupa alamat IPv4 yang valid (contoh: 192.168.1.1).")
+	}
+	for {
+		h.User = prompt("👤 User", h.User)
+		if h.User == "" || isValidUsername(h.User) {
+			break
+		}
+		fmt.Println("⚠ User hanya boleh berisi huruf, angka, underscore (_), titik (.), dan strip (-).")
+	}
+	for {
+		portStr := prompt("🔌 Port", strconv.Itoa(h.Port))
+		if portStr == "" || isValidPort(portStr) {
+			if portStr != "" {
+				h.Port, _ = strconv.Atoi(portStr)
+			}
+			break
+		}
+		fmt.Println("⚠ Port harus berupa angka 1-65535.")
+	}
 
 	if h.Alias != alias {
 		if pw, ok := getSecret(alias); ok {
@@ -341,7 +465,7 @@ func cmdEdit(args []string) {
 	updatePass := prompt("🔒 Ubah password? (y/N)", "N")
 	if strings.ToLower(updatePass) == "y" {
 		ensurePasswordToolsInstalled()
-		pw := promptRequired("   🔒 Password")
+		pw := readPassword("   🔒 Password")
 		if secretToolAvailable() {
 			if err := storeSecret(h.Alias, pw); err != nil {
 				fmt.Printf("⚠ Gagal simpan ke keyring (%v), password disimpan di config sebagai fallback.\n", err)
@@ -468,10 +592,10 @@ func cmdPathAdd(args []string) {
 	pa := PathAlias{}
 	for {
 		pa.Alias = promptRequired("📁 Alias path")
-		if !strings.Contains(pa.Alias, " ") {
+		if isValidAlias(pa.Alias) {
 			break
 		}
-		fmt.Println("⚠ Alias path tidak boleh mengandung spasi.")
+		fmt.Println("⚠ Alias hanya boleh berisi huruf, angka, strip (-), dan underscore (_).")
 	}
 	pa.Path = promptRequired("📁 Path")
 	pa.Command = prompt("▶ Command (opsional, kosongkan jika tidak ada)", "")
@@ -569,10 +693,10 @@ func cmdPathEdit(args []string) {
 	fmt.Println("Kosongkan untuk mempertahankan nilai saat ini.")
 	for {
 		pa.Alias = prompt("📁 Alias path", pa.Alias)
-		if !strings.Contains(pa.Alias, " ") {
+		if pa.Alias == "" || isValidAlias(pa.Alias) {
 			break
 		}
-		fmt.Println("⚠ Alias path tidak boleh mengandung spasi.")
+		fmt.Println("⚠ Alias hanya boleh berisi huruf, angka, strip (-), dan underscore (_).")
 	}
 	pa.Path = prompt("📁 Path", pa.Path)
 	pa.Command = prompt("▶ Command (opsional)", pa.Command)
@@ -633,7 +757,7 @@ func cmdCompletion(args []string) {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [ "$COMP_CWORD" -eq 1 ]; then
-        COMPREPLY=($(compgen -W "$(hop --complete-hosts) list add edit remove path-list path-add path-edit path-remove init help secret-remove" -- "$cur"))
+        COMPREPLY=($(compgen -W "$(hop --complete-hosts) list add edit remove path-list path-add path-edit path-remove init help secret-remove logs logs-clear version" -- "$cur"))
     elif [ "$COMP_CWORD" -eq 2 ]; then
         case "$prev" in
             edit|remove|path-list|path-add|path-edit|path-remove)
@@ -683,6 +807,69 @@ func cmdSecretRemove(args []string) {
 	fmt.Printf("✓ Password untuk '%s' dihapus dari keyring.\n", alias)
 }
 
+func cmdLogs() {
+	lp := logPath()
+	if _, err := os.Stat(lp); os.IsNotExist(err) {
+		os.MkdirAll(configDir, 0755)
+		f, err := os.OpenFile(lp, os.O_CREATE|os.O_WRONLY, 0600)
+		if err == nil {
+			f.Close()
+		}
+	}
+
+	fmt.Printf("📜 Menampilkan log aktivitas hop secara realtime (%s)\n", lp)
+	fmt.Println("   Tekan Ctrl+C untuk keluar.")
+	fmt.Println()
+
+	cmd := exec.Command("tail", "-f", "-n", "20", lp)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return
+	}
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Start(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return
+	}
+
+	scanner := bufio.NewScanner(stdout)
+	for scanner.Scan() {
+		fmt.Println(colorizeLogLine(scanner.Text()))
+	}
+
+	cmd.Wait()
+}
+
+func colorizeLogLine(line string) string {
+	const reset = "\033[0m"
+	upper := strings.ToUpper(line)
+
+	var color string
+	switch {
+	case strings.Contains(upper, "GAGAL") || strings.Contains(upper, "TIDAK DITEMUKAN"):
+		color = "\033[31m"
+	case strings.Contains(upper, "BERHASIL") || strings.Contains(upper, "DITEMUKAN"):
+		color = "\033[32m"
+	case strings.Contains(upper, "MULAI") || strings.Contains(upper, "MENGHUBUNGKAN") || strings.Contains(upper, "MEMERIKSA"):
+		color = "\033[34m"
+	case strings.Contains(upper, "SESI") || strings.Contains(upper, "SELESAI"):
+		color = "\033[33m"
+	default:
+		return line
+	}
+	return color + line + reset
+}
+
+func cmdLogsClear() {
+	if err := clearLog(); err != nil {
+		fmt.Fprintf(os.Stderr, "⚠ Gagal menghapus isi log: %v\n", err)
+		return
+	}
+	fmt.Println("✓ Log berhasil dikosongkan.")
+}
+
 func checkTool(name string, required bool, note string) {
 	_, err := exec.LookPath(name)
 	if err == nil {
@@ -693,6 +880,18 @@ func checkTool(name string, required bool, note string) {
 		fmt.Printf("✗ %-12s TIDAK ditemukan — %s\n", name, note)
 	} else {
 		fmt.Printf("⚠ %-12s tidak ditemukan — %s\n", name, note)
+	}
+}
+
+func readPassword(label string) string {
+	for {
+		fmt.Print(label + ": ")
+		scanner.Scan()
+		pw := strings.TrimSpace(scanner.Text())
+		if pw != "" {
+			return pw
+		}
+		fmt.Println("⚠ Password tidak boleh kosong.")
 	}
 }
 

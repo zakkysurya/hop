@@ -228,7 +228,7 @@ hosts:
 | Field | Keterangan |
 |-------|------------|
 | `alias` | Nama unik untuk memanggil host di CLI (tidak boleh mengandung spasi) |
-| `host` | IP atau hostname server SSH |
+| `host` | Alamat IP server SSH |
 | `user` | Username login SSH |
 | `port` | Port SSH (default `22`) |
 | `identity_file` | Path ke SSH private key (opsional) |
@@ -270,6 +270,9 @@ hop dev-projek projek2 -- htop   # override: jalankan htop, bukan command defaul
 | `hop remove <host>` | Hapus host |
 | `hop doctor` | Cek tools & koneksi ke semua host |
 | `hop exec <host> -- <cmd>` | Jalankan command non-interaktif |
+| `hop logs` | Lihat log aktivitas hop secara real-time (terbaru di bawah) |
+| `hop logs-clear` | Kosongkan seluruh isi log tanpa menghapus file |
+| `hop version` | Tampilkan versi hop |
 | `hop secret-remove <host>` | Hapus password dari OS keyring |
 | `hop path-list [<host>]` | Lihat semua path (semua host / spesifik) |
 | `hop path-add <host>` | Tambah path baru ke host |
@@ -301,6 +304,33 @@ Jalankan perintah langsung di server tanpa masuk sesi shell.
 ```bash
 hop exec dev-projek -- echo "halo"
 hop exec dev-projek projek1 -- ls -l
+```
+
+### 📜 Hop Logs (Real-Time Activity Log)
+
+Pantau semua aktivitas hop secara real-time di terminal terpisah. Cocok
+untuk mengetahui penyebab gagal konek (salah port, password, dll) tanpa
+menebak-nebak — karena respons mentah dari server turut dicatat.
+
+```bash
+# Terminal 1: jalankan logs
+hop logs
+
+# Terminal 2: lakukan aktivitas (connect/doctor/exec)
+hop doctor
+hop dev-projek
+hop exec dev-projek -- ls -l
+```
+
+Log menampilkan baris **terbaru di paling bawah** (standar `tail -f`).
+File log berformat plain text tanpa kode warna, sehingga bisa di-`grep`
+dan diproses tool eksternal lain.
+
+### 🔢 Hop Version
+
+```bash
+hop version
+# → hop v1.0 (2026-07-15)
 ```
 
 <details>
@@ -346,7 +376,7 @@ source ~/.bashrc
 
 ---
 
-*Update terakhir: 15 Juli 2026*
+*Update terakhir: 16 Jul 2026*
 
 ---
 

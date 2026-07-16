@@ -416,7 +416,7 @@
                     <table class="config-table">
                         <tr><th>Field</th><th>Keterangan</th></tr>
                         <tr><td><code>alias</code></td><td>Nama unik untuk memanggil host di CLI (tidak boleh mengandung spasi)</td></tr>
-                        <tr><td><code>host</code></td><td>IP atau hostname server SSH</td></tr>
+                        <tr><td><code>host</code></td><td>Alamat IP server SSH</td></tr>
                         <tr><td><code>user</code></td><td>Username login SSH</td></tr>
                         <tr><td><code>port</code></td><td>Port SSH (default <code>22</code>)</td></tr>
                         <tr><td><code>identity_file</code></td><td>Path ke SSH private key (opsional)</td></tr>
@@ -552,6 +552,40 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
         </div>
     </section>
 
+    <section>
+        <div class="container">
+            <h2 class="section-title">Real-Time Activity Log</h2>
+            <p class="section-subtitle">Pantau semua aktivitas hop secara real-time di terminal terpisah.</p>
+            <div class="usage-cards">
+                <div class="usage-card">
+                    <div class="card-head"><h4>&#128203; Hop Logs</h4></div>
+                    <div class="card-body">
+                        <p>Terminal 1: jalankan <code>hop logs</code> untuk melihat log real-time.
+                        Terminal 2: lakukan aktivitas (doctor, connect, exec).</p>
+                        <code class="inline-code">hop logs</code><br><br>
+                        <code class="inline-code">hop doctor</code>
+                        <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--gray-500);">
+                        Baris <b>terbaru di bawah</b> (standar <code>tail -f</code>).
+                        File log berformat plain text tanpa kode warna,
+                        sehingga bisa di-<code>grep</code> dan diproses tool eksternal.
+                        Respons mentah server turut dicatat untuk diagnosis.
+                        </p>
+                    </div>
+                </div>
+                <div class="usage-card">
+                    <div class="card-head"><h4>&#128260; Versi</h4></div>
+                    <div class="card-body">
+                        <p>Cek versi hop yang terpasang.</p>
+                        <code class="inline-code">hop version</code>
+                        <p style="margin-top:0.75rem;font-size:0.85rem;color:var(--gray-500);">
+                        Output: <code>hop v1.0 (2026-07-15)</code>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section style="background:var(--section-alt-bg);">
         <div class="container">
             <h2 class="section-title">Semua Perintah</h2>
@@ -569,6 +603,9 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
                             <tr><td><code>hop remove &lt;host&gt;</code></td><td>Hapus host</td></tr>
                             <tr><td><code>hop doctor</code></td><td>Cek koneksi ke semua host</td></tr>
                             <tr><td><code>hop exec &lt;host&gt; -- &lt;cmd&gt;</code></td><td>Jalankan command non-interaktif</td></tr>
+                            <tr><td><code>hop logs</code></td><td>Lihat log aktivitas secara real-time (terbaru di bawah)</td></tr>
+                            <tr><td><code>hop logs-clear</code></td><td>Kosongkan seluruh isi log tanpa menghapus file</td></tr>
+                            <tr><td><code>hop version</code></td><td>Tampilkan versi hop</td></tr>
                             <tr><td><code>hop path-list [&lt;host&gt;]</code></td><td>Lihat semua path (semua host / spesifik)</td></tr>
                             <tr><td><code>hop path-add &lt;host&gt;</code></td><td>Tambah path baru ke host</td></tr>
                             <tr><td><code>hop path-edit &lt;host&gt; &lt;path&gt;</code></td><td>Ubah detail path</td></tr>
@@ -776,7 +813,7 @@ dev-projek  prod-server  staging</span>
         <div class="container">
             <p>&copy; 2026 hop &mdash; Made with &#10084; by <a href="https://github.com/zakkysurya" target="_blank">zakkysurya</a></p>
             <p style="margin-top:0.5rem;font-size:0.8rem;color:#475569;">Lisensi MIT &bull; Dibuat untuk mempercepat workflow development sehari-hari &#128007;&#128168;</p>
-            <p style="margin-top:0.3rem;font-size:0.75rem;color:#374151;">Update terakhir: 15 Juli 2026</p>
+            <p style="margin-top:0.3rem;font-size:0.75rem;color:#374151;">Update terakhir: 16 Jul 2026</p>
         </div>
     </footer>
 

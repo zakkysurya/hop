@@ -80,6 +80,8 @@ func buildSSHCmd(h Host, args []string) *exec.Cmd {
 }
 
 func testConnection(h Host) error {
+	logEvent(h.Alias, "CONNECT mulai menghubungkan ke %s:%d", h.Host, h.Port)
+
 	cp := controlPath(h)
 	args := baseSSHArgs(h)
 	args = append(args,
@@ -93,8 +95,13 @@ func testConnection(h Host) error {
 	cmd := buildSSHCmd(h, args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		logEvent(h.Alias, "CONNECT GAGAL — %s", parseSSHError(string(out), err).Error())
+		if raw := strings.TrimSpace(string(out)); raw != "" {
+			logEvent(h.Alias, "CONNECT respons mentah server: %s", raw)
+		}
 		return parseSSHError(string(out), err)
 	}
+	logEvent(h.Alias, "CONNECT berhasil")
 	return nil
 }
 
@@ -117,6 +124,8 @@ func parseSSHError(output string, err error) error {
 }
 
 func checkPathExists(h Host, path string) (bool, error) {
+	logEvent(h.Alias, "CEK_PATH memeriksa '%s'", path)
+
 	cp := controlPath(h)
 	args := baseSSHArgs(h)
 	args = append(args, "-T", "-o", "ControlPath="+cp, hostAddr(h),
@@ -125,14 +134,24 @@ func checkPathExists(h Host, path string) (bool, error) {
 	cmd := buildSSHCmd(h, args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
+		logEvent(h.Alias, "CEK_PATH GAGAL — %s", parseSSHError(string(out), err).Error())
 		return false, parseSSHError(string(out), err)
 	}
-	return strings.Contains(string(out), "FOUND"), nil
+	found := strings.Contains(string(out), "FOUND")
+	if found {
+		logEvent(h.Alias, "CEK_PATH '%s' ditemukan", path)
+	} else {
+		logEvent(h.Alias, "CEK_PATH '%s' TIDAK ditemukan", path)
+	}
+	return found, nil
 }
 
 func SSHConnect(h Host, path string, command string) error {
 	defer resetTerminalTitle()
 	defer closeControlMaster(h)
+
+	logEvent(h.Alias, "SESI sesi interaktif dimulai")
+	defer logEvent(h.Alias, "SESI sesi interaktif selesai")
 
 	elapsed, err := withSpinner(fmt.Sprintf("Menghubungkan ke %s (%s)...", h.Alias, h.Host), func() error {
 		return testConnection(h)
@@ -220,6 +239,8 @@ func ExecRemote(h Host, path string, command string) int {
 	args := baseSSHArgs(h)
 	args = append(args, "-T", "-o", "ControlPath="+cp, hostAddr(h), remoteCmd)
 
+	logEvent(h.Alias, "EXEC menjalankan: %s", remoteCmd)
+
 	cmd := buildSSHCmd(h, args)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -227,11 +248,14 @@ func ExecRemote(h Host, path string, command string) int {
 
 	if err := cmd.Run(); err != nil {
 		if exitErr, ok := err.(*exec.ExitError); ok {
+			logEvent(h.Alias, "EXEC selesai, exit code %d", exitErr.ExitCode())
 			return exitErr.ExitCode()
 		}
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		logEvent(h.Alias, "EXEC selesai, exit code 1")
 		return 1
 	}
+	logEvent(h.Alias, "EXEC selesai, exit code 0")
 	return 0
 }
 
