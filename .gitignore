@@ -10,5 +10,6 @@
 Thumbs.db
 
 # Context directories
-/.context/
+/.context
+/.claude
 AGENTS.md
