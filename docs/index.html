@@ -611,6 +611,7 @@ xx.xx.xx.xx  dev-projek  /var/www/html/projek2  projek2</pre>
                             <tr><td><code>hop path-edit &lt;host&gt; &lt;path&gt;</code></td><td>Ubah detail path</td></tr>
                             <tr><td><code>hop path-remove &lt;host&gt; &lt;path&gt;</code></td><td>Hapus path dari host</td></tr>
                             <tr><td><code>hop secret-remove &lt;host&gt;</code></td><td>Hapus password host dari OS keyring</td></tr>
+                            <tr><td><code>hop update</code></td><td>Perbarui hop ke versi terbaru dari GitHub</td></tr>
                             <tr><td><code>hop init</code></td><td>Buat config default bila belum ada</td></tr>
                             <tr><td><code>hop help</code></td><td>Tampilkan pesan bantuan</td></tr>
                         </tbody>
@@ -747,8 +748,11 @@ hop.exe help</pre>
                         <span class="dot" style="background:#10B981;"></span>
                         Update Fitur Terbaru
                     </div>
-<pre><span class="comment"># Tarik perubahan terbaru & rebuild</span>
-<span class="cmd">cd</span> hop
+<pre><span class="comment"># Cara utama (bisa dijalankan dari folder MANAPUN):</span>
+<span class="cmd">hop update</span>
+
+<span class="comment"># Fallback (kalau Go/Git tidak terpasang di PATH):</span>
+<span class="cmd">cd</span> /path/to/hop/source
 <span class="cmd">git pull</span>
 <span class="cmd">go build -o hop . && cp hop ~/.local/bin/hop</span></pre>
                 </div>

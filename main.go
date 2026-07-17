@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -108,6 +109,8 @@ func main() {
 		cmdCompletion(args)
 	case "help", "--help", "-h":
 		printUsage(false)
+	case "update":
+		cmdUpdate()
 	case "secret-remove":
 		cmdSecretRemove(args)
 	case "logs":
@@ -149,9 +152,12 @@ Lainnya:
   logs                       Tampilkan log aktivitas secara real-time
   logs-clear                 Kosongkan seluruh isi log
   secret-remove <host>       Hapus password Host dari OS keyring
+  update                     Perbarui hop ke versi terbaru dari GitHub
   version                    Tampilkan versi hop
   help                       Tampilkan pesan bantuan ini`)
 }
+
+const hopRepoURL = "https://github.com/zakkysurya/hop.git"
 
 var scanner = bufio.NewScanner(os.Stdin)
 
@@ -759,7 +765,7 @@ func cmdCompletion(args []string) {
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
     if [ "$COMP_CWORD" -eq 1 ]; then
-        COMPREPLY=($(compgen -W "$(hop --complete-hosts) list add edit remove path-list path-add path-edit path-remove init help secret-remove logs logs-clear version" -- "$cur"))
+        COMPREPLY=($(compgen -W "$(hop --complete-hosts) list add edit remove path-list path-add path-edit path-remove init help secret-remove logs logs-clear version update" -- "$cur"))
     elif [ "$COMP_CWORD" -eq 2 ]; then
         case "$prev" in
             edit|remove|path-list|path-add|path-edit|path-remove)
@@ -1041,4 +1047,78 @@ func cmdExec(args []string, command string) {
 
 	exitCode := ExecRemote(host, targetPath, command)
 	os.Exit(exitCode)
+}
+
+func cmdUpdate() {
+	installPath, err := os.Executable()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return
+	}
+	if resolved, err := filepath.EvalSymlinks(installPath); err == nil {
+		installPath = resolved
+	}
+	fmt.Printf("📍 Binary aktif terdeteksi di: %s\n", installPath)
+
+	srcDir, err := os.MkdirTemp("", "hop-update-*")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "✗ Gagal membuat folder sementara: %v\n", err)
+		return
+	}
+	defer os.RemoveAll(srcDir)
+
+	_, err = withSpinner("Mengunduh source terbaru (git clone)...", func() error {
+		cmd := exec.Command("git", "clone", "--depth", "1", hopRepoURL, srcDir)
+		out, cerr := cmd.CombinedOutput()
+		if cerr != nil {
+			return fmt.Errorf("%s", strings.TrimSpace(string(out)))
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("✗ Gagal mengunduh source: %v\n", err)
+		return
+	}
+	fmt.Println("✓ Source terbaru berhasil diunduh.")
+
+	tempBinary := filepath.Join(srcDir, "hop.new")
+	_, err = withSpinner("Membangun ulang (go build)...", func() error {
+		cmd := exec.Command("go", "build", "-o", tempBinary, ".")
+		cmd.Dir = srcDir
+		out, cerr := cmd.CombinedOutput()
+		if cerr != nil {
+			return fmt.Errorf("%s", strings.TrimSpace(string(out)))
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("✗ Build gagal: %v\n", err)
+		fmt.Println("  Binary lama TIDAK diganti — hop Anda tetap aman dipakai seperti sebelumnya.")
+		return
+	}
+	os.Chmod(tempBinary, 0755)
+	fmt.Println("✓ Build berhasil.")
+
+	_, err = withSpinner("Memasang binary baru...", func() error {
+		if renameErr := os.Rename(tempBinary, installPath); renameErr != nil {
+			return copyFile(tempBinary, installPath)
+		}
+		return nil
+	})
+	if err != nil {
+		fmt.Printf("✗ Gagal memasang binary baru: %v\n", err)
+		fmt.Printf("  Binary baru tersedia manual di: %s\n", tempBinary)
+		return
+	}
+
+	fmt.Println("✓ hop berhasil diperbarui.")
+	fmt.Println("  Jalankan 'hop version' untuk verifikasi.")
+}
+
+func copyFile(src, dst string) error {
+	data, err := os.ReadFile(src)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(dst, data, 0755)
 }

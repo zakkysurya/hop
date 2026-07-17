@@ -100,9 +100,13 @@ hop.exe help
 ## 🔄 Update
 
 ```bash
-cd hop          # masuk ke direktori hasil clone
-git pull        # tarik perubahan terbaru
-go build -o hop . && cp hop ~/.local/bin/hop   # rebuild & pasang
+# Cara utama (bisa dijalankan dari folder MANAPUN):
+hop update
+
+# Fallback (kalau Go/Git tidak terpasang di PATH):
+cd /path/to/hop/source
+git pull
+go build -o hop . && cp hop ~/.local/bin/hop
 ```
 
 ---
