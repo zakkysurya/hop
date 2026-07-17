@@ -14,6 +14,8 @@ import (
 )
 
 func main() {
+	rotateLogIfNewDay()
+
 	if err := migrateOldConfig(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error migrasi konfigurasi: %v\n", err)
 	}
@@ -848,7 +850,7 @@ func colorizeLogLine(line string) string {
 
 	var color string
 	switch {
-	case strings.Contains(upper, "GAGAL") || strings.Contains(upper, "TIDAK DITEMUKAN"):
+	case strings.Contains(upper, "GAGAL") || strings.Contains(upper, "TIDAK DITEMUKAN") || strings.Contains(upper, "MENTAH"):
 		color = "\033[31m"
 	case strings.Contains(upper, "BERHASIL") || strings.Contains(upper, "DITEMUKAN"):
 		color = "\033[32m"

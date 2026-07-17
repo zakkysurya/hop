@@ -376,7 +376,7 @@ source ~/.bashrc
 
 ---
 
-*Update terakhir: 16 Jul 2026*
+*Update terakhir: 17 Jul 2026*
 
 ---
 

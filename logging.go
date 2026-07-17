@@ -18,6 +18,18 @@ func clearLog() error {
 	return os.Truncate(logPath(), 0)
 }
 
+func rotateLogIfNewDay() {
+	info, err := os.Stat(logPath())
+	if err != nil {
+		return // belum ada log sama sekali
+	}
+	today := time.Now().Format("2006-01-02")
+	lastWritten := info.ModTime().Format("2006-01-02")
+	if lastWritten != today {
+		os.Truncate(logPath(), 0)
+	}
+}
+
 func logEvent(alias string, format string, args ...interface{}) {
 	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return
